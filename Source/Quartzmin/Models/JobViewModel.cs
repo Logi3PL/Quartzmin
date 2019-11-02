@@ -1,5 +1,6 @@
 ﻿using Quartzmin.Helpers;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 
 namespace Quartzmin.Models
@@ -14,6 +15,10 @@ namespace Quartzmin.Models
 
     public class JobPropertiesViewModel : IHasValidation
     {
+        public JobPropertiesViewModel()
+        {
+            this.CustomFormData = new List<CustomDataModel>();
+        }
         public bool IsNew { get; set; }
 
         public bool IsCopy { get; set; }
@@ -35,6 +40,8 @@ namespace Quartzmin.Models
         public IEnumerable<string> TypeList { get; set; }
 
         public string Description { get; set; }
+
+        public List<CustomDataModel> CustomFormData { get; set; }
 
         public bool Recovery { get; set; }
 

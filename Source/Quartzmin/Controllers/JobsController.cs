@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 #region Target-Specific Directives
 #if NETSTANDARD
@@ -129,7 +130,16 @@ namespace Quartzmin.Controllers
             if (clone)
                 jobModel.JobName += " - Copy";
 
-            jobDataMap.Items.AddRange(job.GetJobDataMapModel(Services));
+            var jobData = job.GetJobDataMapModel(Services);
+
+            var customData = jobData.Where(x => x.Name == "CustomData").FirstOrDefault();
+            if (customData!=null)
+            {
+                var customFormDataModel = JsonConvert.DeserializeObject<List<CustomDataModel>>(customData.Value.ToString());
+                jobModel.CustomFormData = customFormDataModel;
+            }
+
+            jobDataMap.Items.AddRange(jobData);
 
             return View("Edit", new JobViewModel() { Job = jobModel, DataMap = jobDataMap });
         }
@@ -157,13 +167,26 @@ namespace Quartzmin.Controllers
 
             if (result.Success)
             {
+                var jobData = jobDataMap.GetQuartzJobDataMap();
+
+                if (model?.Job?.CustomFormData?.Count>0)
+                {
+                    if (jobData == null)
+                    {
+                        jobData = new JobDataMap();
+                    }
+
+                    var customFormData = JsonConvert.SerializeObject(model.Job.CustomFormData);
+                    jobData.Add("CustomData", customFormData);
+                }
+
                 IJobDetail BuildJob(JobBuilder builder)
                 {
                     return builder
                         .OfType(Type.GetType(jobModel.Type, true))
                         .WithIdentity(jobModel.JobName, jobModel.Group)
                         .WithDescription(jobModel.Description)
-                        .SetJobData(jobDataMap.GetQuartzJobDataMap())
+                        .SetJobData(jobData)
                         .RequestRecovery(jobModel.Recovery)
                         .Build();
                 }

@@ -1,8 +1,8 @@
 ﻿{{!<Layout}}
 {{#if Model.Job.IsNew}}
-    {{ViewBag Title='Add Job'}}
+{{ViewBag Title='Add Job'}}
 {{else}}
-    {{ViewBag Title='Edit Job'}}
+{{ViewBag Title='Edit Job'}}
 {{/if}}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
@@ -74,6 +74,9 @@
             </div>
         </div>
         {{/with}}
+        <div id="subJobContainer">
+            {{>SendData/SendDataJobForm}}
+        </div>
         <h3 class="ui dividing header">Job Data Map</h3>
 
         {{>JobDataMap Model.DataMap}}
@@ -92,11 +95,24 @@
 </div>
 
 <script>
+
     $(function () {
+        $('#subJobContainer').hide();
+
         const
             $jobGroup = $('#jobGroup').val(),
             $jobName = $('#jobName').val(),
             $jobType = $('#jobType').val();
+
+        $('#jobTypeDropdown').on('change', function () {
+
+            if (this.value.indexOf('SendMailJob') > -1) {
+
+                $('#subJobContainer').show();
+            } else {
+                $('#subJobContainer').hide();
+            }
+        });
 
         // inits
         $('#job-properties .ui.dropdown, #header .ui.dropdown').each(function () {
@@ -127,6 +143,15 @@
             $('#job-data-map').jobDataMapPrepareForm();
 
             var formData = new FormData($('#form')[0]);
+            debugger;
+
+            var customFormData = new FormData();
+            customFormData.append("ToData", "ToDataaaaaa");
+            customFormData.append("Başlık", "BaşlıkData");
+
+            //formData.append("CustomFormData", formData);
+
+            debugger;
 
             $.ajax({
                 type: 'POST', enctype: 'multipart/form-data', url: '{{ActionUrl "Save"}}?trigger=' + triggerNow,
@@ -152,3 +177,4 @@
 </script>
 
 <script src="Content/Scripts/post-validation.js"></script>
+

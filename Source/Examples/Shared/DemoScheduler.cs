@@ -1,7 +1,10 @@
 ﻿using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using Quartz.Listener;
+using Quartz.Plugins;
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -12,7 +15,47 @@ namespace Quartzmin
     {
         public static async Task<IScheduler> Create(bool start = true)
         {
-            var scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+            NameValueCollection configuration = new NameValueCollection
+            {
+                 { "quartz.scheduler.instanceName", "LocalServer" },
+                 { "quartz.scheduler.instanceId", "LocalServer" },
+                 { "quartz.jobStore.type", "Quartz.Impl.AdoJobStore.JobStoreTX, Quartz" },
+                 //{ "quartz.jobStore.useProperties", "true" },
+                 { "quartz.jobStore.dataSource", "default" },
+                 { "quartz.jobStore.tablePrefix", "QRTZ_" },
+                 { "quartz.dataSource.default.connectionString", "Data Source=127.0.0.1,1000;Integrated Security=True;Initial Catalog=QuartzNetJobDb;UID=sa;PWD=I@mJustT3st1ing;Integrated Security=False" },
+                 { "quartz.dataSource.default.provider", "SqlServer" },
+                 //{ "quartz.threadPool.threadCount", "1" },
+                 { "quartz.serializer.type", "binary" }
+            };
+
+            configuration["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
+            configuration["quartz.threadPool.threadCount"] = "5";
+            configuration["quartz.threadPool.threadPriority"] = "Normal";
+            configuration["quartz.plugin.recentHistory.type"] = "Quartz.Plugins.RecentHistory.ExecutionHistoryPlugin, Quartz.Plugins.RecentHistory";
+
+            configuration["quartz.plugin.recentHistory.storeType"] = "Quartz.Plugins.RecentHistory.Impl.InProcExecutionHistoryStore, Quartz.Plugins.RecentHistory";
+
+            StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
+            IScheduler scheduler = await factory.GetScheduler();
+            //var scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+
+            //var jobb = JobBuilder.Create<SendMailJobDefinition>()
+            //        .WithIdentity("SendMail", "SEND")
+            //        .WithDescription("Hello Job!")
+            //        .StoreDurably()
+            //        .Build();
+            //var triggerr = TriggerBuilder.Create()
+            //    .WithIdentity("MorningSend")
+            //    .StartNow()
+            //    .WithCronSchedule("0 0 8 1/1 * ? *")
+            //    .Build();
+            //await scheduler.ScheduleJob(jobb, triggerr);
+
+            if (start)
+                await scheduler.Start();
+
+            return scheduler;
 
             {
                 var jobData = new JobDataMap();
@@ -39,15 +82,26 @@ namespace Quartzmin
                     .WithCronSchedule("0 0 12 1 1/1 ? *")
                     .Build();
                 await scheduler.ScheduleJob(trigger);
-                await scheduler.PauseTrigger(trigger.Key);
 
-                trigger = TriggerBuilder.Create()
-                    .WithIdentity("HourlySales")
-                    .ForJob(job.Key)
-                    .StartNow()
-                    .WithSimpleSchedule(x => x.WithIntervalInHours(1).RepeatForever())
-                    .Build();
-                await scheduler.ScheduleJob(trigger);
+                #region Dependent Jobs
+                //JobKey jobKey1 = new JobKey("job1", "group1");
+                //JobKey jobKey2 = new JobKey("job2", "group2");
+
+                //var job1 = JobBuilder.Create<DummyJob>().WithIdentity(jobKey1).Build();
+                //var job2 = JobBuilder.Create<DummyJob>().WithIdentity(jobKey2).StoreDurably(true).Build();
+
+                //ITrigger trigger1 = TriggerBuilder.Create()
+                //   .WithIdentity("trigger1", "group1")
+                //   .StartNow()
+                //   .Build();
+
+                //JobChainingJobListener chain = new JobChainingJobListener("testChain");
+                //chain.AddJobChainLink(jobKey1, jobKey2);
+                //scheduler.ListenerManager.AddJobListener(chain, GroupMatcher<JobKey>.AnyGroup());
+
+                //await scheduler.ScheduleJob(job1, trigger1);
+                //await scheduler.AddJob(job2, true); 
+                #endregion
             }
 
             {
@@ -87,30 +141,7 @@ namespace Quartzmin
                 await scheduler.AddJob(job, false);
             }
 
-            {
-                var job = JobBuilder.Create<DisallowConcurrentJob>()
-                    .WithIdentity("Load CSV", "IMPORT")
-                    .StoreDurably()
-                    .Build();
-                var trigger = TriggerBuilder.Create()
-                    .WithIdentity("CSV_small", "FREQUENTLY")
-                    .ForJob(job)
-                    .StartNow()
-                    .WithSimpleSchedule(x => x.WithIntervalInSeconds(5).RepeatForever())
-                    .Build();
-                await scheduler.ScheduleJob(job, trigger);
-                trigger = TriggerBuilder.Create()
-                    .WithIdentity("CSV_big", "LONGRUNNING")
-                    .ForJob(job)
-                    .StartNow()
-                    .WithDailyTimeIntervalSchedule(x=>x.OnMondayThroughFriday())
-                    .Build();
-                await scheduler.ScheduleJob(trigger);
-            }
-            if (start)
-                await scheduler.Start();
-
-            return scheduler;
+            
         }
 
         public class DummyJob : IJob

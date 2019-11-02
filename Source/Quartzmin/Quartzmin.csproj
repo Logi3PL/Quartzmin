@@ -75,4 +75,10 @@
     <EmbeddedResource Include="TypeHandlers\*.js" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Content\jquery.steps.css" />
+    <None Remove="Views\Partials\SendData\SendDataJobDetailForm.hbs" />
+    <None Remove="Views\Partials\SendData\SendDataJobForm.hbs" />
+  </ItemGroup>
+
 </Project>
