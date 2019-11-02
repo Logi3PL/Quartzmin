@@ -75,7 +75,7 @@
         </div>
         {{/with}}
         <div id="subJobContainer">
-            {{>SendData/SendDataJobForm}}
+            {{>SendData/SendDataJobForm Model}}
         </div>
         <h3 class="ui dividing header">Job Data Map</h3>
 
@@ -97,12 +97,18 @@
 <script>
 
     $(function () {
-        $('#subJobContainer').hide();
-
+        
         const
             $jobGroup = $('#jobGroup').val(),
             $jobName = $('#jobName').val(),
             $jobType = $('#jobType').val();
+
+        if ($jobType.indexOf('SendMailJob') > -1) {
+
+            $('#subJobContainer').show();
+        } else {
+            $('#subJobContainer').hide();
+        }
 
         $('#jobTypeDropdown').on('change', function () {
 

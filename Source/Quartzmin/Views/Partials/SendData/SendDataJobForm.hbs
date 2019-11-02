@@ -3,37 +3,37 @@
     <section>
         <label for="sendDataTo">To</label>
         <input type="hidden" name="job.CustomFormData[0].Key" value="to" />
-        <input type="text" name="job.CustomFormData[0].Value" value="{{Model.Job.CustomFormData[0].Value}}" id="sendDataTo" />
+        <input type="text" name="job.CustomFormData[0].Value" value="{{CustomFormData.0.Value}}" id="sendDataTo" />
         <label for="sendDataCc">Cc</label>
         <input type="hidden" name="job.CustomFormData[1].Key" value="cc" />
-        <input type="text" name="job.CustomFormData[1].Value" id="sendDataCc" />
+        <input type="text" name="job.CustomFormData[1].Value" value="{{CustomFormData.1.Value}}" id="sendDataCc" />
         <label for="sendDataBcc">Bcc</label>
         <input type="hidden" name="job.CustomFormData[2].Key" value="bcc" />
-        <input type="text" name="job.CustomFormData[2].Value" id="sendDataBcc" />
+        <input type="text" name="job.CustomFormData[2].Value" value="{{CustomFormData.2.Value}}" id="sendDataBcc" />
         <label for="sendDataSqlQuery">Sql Query</label>
         <input type="hidden" name="job.CustomFormData[3].Key" value="sqlquery" />
-        <input type="text" name="job.CustomFormData[3].Value" id="sendDataSqlQuery" />
+        <input type="text" name="job.CustomFormData[3].Value" value="{{CustomFormData.3.Value}}" id="sendDataSqlQuery" />
         <label for="sendDataSqlQueryConStr">Sql Query Connection String</label>
         <input type="hidden" name="job.CustomFormData[4].Key" value="sqlqueryconstr" />
-        <input type="text" name="job.CustomFormData[4].Value" id="sendDataSqlQueryConStr" />
+        <input type="text" name="job.CustomFormData[4].Value" value="{{CustomFormData.4.Value}}" id="sendDataSqlQueryConStr" />
     </section>
     <h3>Send Data Detail</h3>
     <section>
         <label for="sendDataDetailSubject">Konu</label>
         <input type="hidden" name="job.CustomFormData[5].Key" value="subject" />
-        <input id="sendDataDetailSubject" name="job.CustomFormData[5].Value" type="text">
+        <input id="sendDataDetailSubject" name="job.CustomFormData[5].Value" value="{{CustomFormData.5.Value}}" type="text">
         <label for="sendDataDetailHeader">Başlık</label>
         <input type="hidden" name="job.CustomFormData[6].Key" value="header" />
-        <input id="sendDataDetailHeader" name="job.CustomFormData[6].Value" type="text">
+        <input id="sendDataDetailHeader" name="job.CustomFormData[6].Value" value="{{CustomFormData.6.Value}}" type="text">
         <label for="sendDataDetailBody">İçerik</label>
         <input type="hidden" name="job.CustomFormData[7].Key" value="body" />
-        <input id="sendDataDetailBody" name="job.CustomFormData[7].Value" type="text">
+        <input id="sendDataDetailBody" name="job.CustomFormData[7].Value" value="{{CustomFormData.7.Value}}" type="text">
         <label for="sendDataDetailBody">Detay</label>
         <input type="hidden" name="job.CustomFormData[8].Key" value="detail" />
-        <input id="sendDataDetailBody" name="job.CustomFormData[8].Value" type="text">
+        <input id="sendDataDetailBody" name="job.CustomFormData[8].Value" value="{{CustomFormData.8.Value}}" type="text">
         <label for="sendDataDetailBody">Alt Bilgi</label>
         <input type="hidden" name="job.CustomFormData[9].Key" value="footer" />
-        <input id="sendDataDetailBody" name="job.CustomFormData[9].Value" type="text">
+        <input id="sendDataDetailBody" name="job.CustomFormData[9].Value" value="{{CustomFormData.9.Value}}" type="text">
     </section>
 </div>
 

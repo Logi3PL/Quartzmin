@@ -17,7 +17,6 @@ namespace Quartzmin.Models
     {
         public JobPropertiesViewModel()
         {
-            this.CustomFormData = new List<CustomDataModel>();
         }
         public bool IsNew { get; set; }
 
