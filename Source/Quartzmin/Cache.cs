@@ -25,6 +25,8 @@ namespace Quartzmin
                         if (_jobTypes == null)
                         {
                             var keys = _services.Scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup()).GetAwaiter().GetResult();
+
+                            //TODO:Klasörden plugin gibi oku
                             var knownTypes = new List<string>() { "Quartz.Plugins.SendMailJobDefinition, Quartz.Plugins.SendMailJob" };
                             foreach (var key in keys)
                             {

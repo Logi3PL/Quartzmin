@@ -32,6 +32,48 @@ namespace Quartzmin.Helpers
         {
             IHandlebars h = _services.Handlebars;
 
+            h.RegisterHelper("GetItemProp", (o, c, a) =>
+            {
+                if (a.Length != 3 )
+                {
+                    throw new HandlebarsException("GetItem helper must have exactly three argument");
+                }
+
+                List<object> collection = new List<object>();
+                if (Int32.TryParse(a[1].ToString(), out int collectionIndex) == false)
+                {
+                    throw new HandlebarsException("GetItem helper second parameter must be int argument");
+                }
+
+                if (a[0] is System.Collections.IEnumerable)
+                {
+                    var prmCollection = (System.Collections.IEnumerable)a[0];
+
+                    foreach (var item in prmCollection)
+                    {
+                        collection.Add(item);
+                    }
+                }
+                else
+                {
+                    throw new HandlebarsException("GetItem helper first parameter must be IEnumerable argument");
+                }
+
+                if (collection.Count-1 >= collectionIndex)
+                {
+                    var source = "{{"+ a[2] +"}}";
+
+                    var template = Handlebars.Compile(source);
+                    var output = template(collection[collectionIndex]);
+
+                    o.Write(output);
+                }
+                else
+                {
+                    o.Write("");
+                }
+            });
+
             h.RegisterHelper("Upper", (o, c, a) => o.Write(a[0].ToString().ToUpper()));
             h.RegisterHelper("Lower", (o, c, a) => o.Write(a[0].ToString().ToLower()));
             h.RegisterHelper("LocalTimeZoneInfoId", (o, c, a) => o.Write(TimeZoneInfo.Local.Id));

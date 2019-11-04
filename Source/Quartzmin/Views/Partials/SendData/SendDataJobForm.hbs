@@ -34,12 +34,21 @@
         <label for="sendDataDetailBody">Alt Bilgi</label>
         <input type="hidden" name="job.CustomFormData[9].Key" value="footer" />
         <input id="sendDataDetailBody" name="job.CustomFormData[9].Value" value="{{CustomFormData.9.Value}}" type="text">
+        <label for="sendDataDetailSqlQuery">Detail Sql Query</label>
+        <input type="hidden" name="job.CustomFormData[10].Key" value="detailsqlquery" />
+        <input type="text" name="job.CustomFormData[10].Value" value="{{GetItemProp CustomFormData 10 'Value'}}" id="sendDataDetailSqlQuery" />
+        <label for="sendDataDetailSqlQueryConStr">Detail Sql Query Connection String</label>
+        <input type="hidden" name="job.CustomFormData[11].Key" value="detailsqlqueryconstr" />
+        <input type="text" name="job.CustomFormData[11].Value" value="{{GetItemProp CustomFormData 11 'Value'}}" id="sendDataDetailSqlQueryConStr" />
     </section>
 </div>
 
 <script>
 
     $(function () {
+        //var sendDataDetailSqlQueryData = "{{CustomFormData.5.Value}}";
+        //alert(sendDataDetailSqlQueryData);
+
         $("#subJobContainerWizard").steps({
             headerTag: "h3",
             bodyTag: "section",

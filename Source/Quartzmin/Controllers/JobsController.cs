@@ -138,7 +138,7 @@ namespace Quartzmin.Controllers
                 var customFormDataModel = JsonConvert.DeserializeObject<List<CustomDataModel>>(customData.Value.ToString());
                 jobModel.CustomFormData = customFormDataModel;
 
-                jobData.Remove(customData);
+                //jobData.Remove(customData);
             }
 
             jobDataMap.Items.AddRange(jobData);
