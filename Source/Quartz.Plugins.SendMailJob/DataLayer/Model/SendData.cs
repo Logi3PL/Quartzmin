@@ -8,6 +8,12 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Model
     public class SendData
     {
         public int Id { get; set; }
+        public string ScheduleName { get; set; }
+        public string JobName { get; set; }
+        public string JobGroup { get; set; }
+        public string TriggerName { get; set; }
+        public string TriggerGroup { get; set; }
+        public byte Type { get; set; }
         public string To { get; set; }
         public string Cc { get; set; }
         public string Bcc { get; set; }
