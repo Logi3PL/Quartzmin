@@ -19,6 +19,9 @@
         <label for="sendDataSqlQueryConStr">Sql Query Connection String</label>
         <input type="hidden" name="job.CustomFormData[4].Key" value="sqlqueryconstr" />
         <input type="text" name="job.CustomFormData[4].Value" value="{{GetItemProp CustomFormData 4 'Value'}}" id="sendDataSqlQueryConStr" />
+        <label for="useSendDataDetailBodyForAll">Herkes icin aynı içerği kullan</label>
+        <input type="hidden" name="job.CustomFormData[13].Key" value="usedetailforeveryone" />
+        <input type="checkbox" name="job.CustomFormData[13].Value" id="useSendDataDetailBodyForAll" />
     </section>
     <h3>Send Data Detail</h3>
     <section>
@@ -49,8 +52,17 @@
 <script>
 
     $(function () {
-        //var sendDataDetailSqlQueryData = "{{CustomFormData.5.Value}}";
-        //alert(sendDataDetailSqlQueryData);
+        var usedetailforeveryoneData = "{{GetItemProp CustomFormData 13 'Value'}}";
+        
+        if (usedetailforeveryoneData === "on") {
+
+            $('#useSendDataDetailBodyForAll').attr("checked", true);
+
+        } else {
+
+            $('#useSendDataDetailBodyForAll').attr("checked", false);
+
+        }
 
         $("#subJobContainerWizard").steps({
             headerTag: "h3",

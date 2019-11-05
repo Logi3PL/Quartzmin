@@ -65,7 +65,9 @@ namespace Quartzmin.Controllers
             job.Group = SchedulerConstants.DefaultGroup;
             job.TypeList = Services.Cache.JobTypes;
 
-            return View("Edit", new JobViewModel() { Job = job, DataMap = jobDataMap });
+            var customFormData = new List<CustomDataModel>();
+
+            return View("Edit", new { Job = job, CustomFormData = customFormData, DataMap = jobDataMap });
         }
 
         [HttpGet]

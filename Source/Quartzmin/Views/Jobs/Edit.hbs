@@ -149,15 +149,6 @@
             $('#job-data-map').jobDataMapPrepareForm();
 
             var formData = new FormData($('#form')[0]);
-            debugger;
-
-            var customFormData = new FormData();
-            customFormData.append("ToData", "ToDataaaaaa");
-            customFormData.append("Başlık", "BaşlıkData");
-
-            //formData.append("CustomFormData", formData);
-
-            debugger;
 
             $.ajax({
                 type: 'POST', enctype: 'multipart/form-data', url: '{{ActionUrl "Save"}}?trigger=' + triggerNow,

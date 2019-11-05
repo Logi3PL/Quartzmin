@@ -8,6 +8,14 @@ namespace Quartz.Plugins.SendMailJob
     {
         public const string CustomData = "CustomData";
 
+        public static string GetConnectionString()
+        {
+            //TODO:Static
+            var conStr = "Data Source=127.0.0.1,1000;Integrated Security=True;Initial Catalog=QuartzNetJobDb;UID=sa;PWD=I@mJustT3st1ing;Integrated Security=False";
+
+            return conStr;
+        }
+
         public struct CustomDataProps
         {
             public const string Id = "id";
@@ -21,6 +29,7 @@ namespace Quartz.Plugins.SendMailJob
             public const string Header = "header";
             public const string Body = "body";
             public const string Detail = "detail";
+            public const string UseDetailForEveryone = "usedetailforeveryone";
             public const string Footer = "footer";
             public const string DetailSqlquery = "detailsqlquery";
             public const string DetailSqlQueryConnectionString = "detailsqlqueryconstr";

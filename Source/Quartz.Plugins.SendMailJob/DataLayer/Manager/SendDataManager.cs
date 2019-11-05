@@ -142,44 +142,6 @@ WHERE [SCHED_NAME] = @SCHED_NAME
                 return -1;
             }
         }
-
-        public static async Task<bool> GenerateSendDataDetailFrom(SqlConnection connection, SqlTransaction transaction,string sqlQueryConnectionString, string toData,string sqlqueryData,string sqlqueryToField, SendDataDetail sendDataDetail)
-        {
-            try
-            {
-                var toDataSource = new DataTable();
-                var recipients = toData.Split(new[] {";"},StringSplitOptions.RemoveEmptyEntries).ToList();
-
-                if (string.IsNullOrEmpty(sqlqueryData) == false)
-                {
-                    toDataSource = await SendDataSqlQueryManager.GetQueryData(sqlQueryConnectionString, sqlqueryData);
-
-                    if (toDataSource.Rows.Count>0)
-                    {
-                        recipients = new List<string>();
-
-                        for (int i = 0; i < toDataSource.Rows.Count-1; i++)
-                        {
-                            var to = toDataSource.Rows[i][sqlqueryToField]?.ToString();
-
-                            if (string.IsNullOrEmpty(to) == false)
-                            {
-                                recipients.Add(to);
-                            }
-                        }
-                    }
-                }
-
-                
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                //TODO:Log
-                return false;
-            }
-        }
     }
 
     
