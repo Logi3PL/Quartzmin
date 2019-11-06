@@ -108,7 +108,7 @@
 
         try {
             debugger;
-            $('#sendDataDetailContent').val("{{{GetItemProp CustomFormData 7 'Value'}}}");
+            $('#sendDataDetailContent').html(unescape("{{{GetItemProp CustomFormData 7 'Value'}}}"));
             //demo();
         } catch (e) {
             console.log("demo(); problem");

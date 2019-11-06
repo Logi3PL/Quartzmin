@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Quartz.Plugins.SendMailJob.DataLayer.Model;
 using Quartz.Plugins.SendMailJob.Models;
+using Slf;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -112,7 +113,19 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
             }
             catch (Exception ex)
             {
-                //TODO:Log
+                LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                {
+                    LoggerName = ConstantHelper.JobLog,
+                    Title = "InsertSendDataItem Error",
+                    Message = ex.Message,
+                    LogItemProperties = new List<LogItemProperty>() {
+                        new LogItemProperty("ServiceName", "JOB") ,
+                        new LogItemProperty("ActionName", "InsertSendDataItem"),
+                        new LogItemProperty("FormData", sendDataDetail),
+                    },
+                    LogLevel = LogLevel.Error,
+                    Exception = ex
+                });
                 return -1;
             }
         }
@@ -376,7 +389,20 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
             }
             catch (Exception ex)
             {
-                //TODO:Log
+                LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                {
+                    LoggerName = ConstantHelper.JobLog,
+                    Title = "GenerateSendDataItemFrom Error",
+                    Message = ex.Message,
+                    LogItemProperties = new List<LogItemProperty>() {
+                        new LogItemProperty("ServiceName", "JOB") ,
+                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel, SendDataItem = sendDataItem}),
+                    },
+                    LogLevel = LogLevel.Error,
+                    Exception = ex
+                });
+
                 return false;
             }
         }
@@ -428,6 +454,20 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 {
                     //TODO:Logla
                     sendDataItem.ErrorMsg = ex.Message;
+
+                    LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                    {
+                        LoggerName = ConstantHelper.JobLog,
+                        Title = "GenerateSendDataItemFrom Error",
+                        Message = ex.Message,
+                        LogItemProperties = new List<LogItemProperty>() {
+                            new LogItemProperty("ServiceName", "JOB") ,
+                            new LogItemProperty("ActionName", "SendMailAction"),
+                            new LogItemProperty("FormData", recipientList),
+                        },
+                        LogLevel = LogLevel.Error,
+                        Exception = ex
+                    });
                 }
 
                 var saveDataItem = await InsertSendDataItem(sendDataItem);

@@ -6,6 +6,7 @@ namespace Quartz.Plugins.SendMailJob
 {
     public struct ConstantHelper
     {
+        public const string JobLog = "JOB";
         public const string CustomData = "CustomData";
 
         public static string GetConnectionString()

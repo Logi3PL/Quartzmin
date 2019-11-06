@@ -3,11 +3,19 @@ using Quartz.Plugins.SendMailJob;
 using Quartz.Plugins.SendMailJob.DataLayer.Manager;
 using Quartz.Plugins.SendMailJob.DataLayer.Model;
 using Quartz.Plugins.SendMailJob.Models;
+using Slf;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+
+#if NETSTANDARD
+//using Slf.NetCore;
+#endif
+#if NETFRAMEWORK
+using Slf;
+#endif
 
 namespace Quartz.Plugins
 {
@@ -19,6 +27,14 @@ namespace Quartz.Plugins
 
         public async Task Execute(IJobExecutionContext context)
         {
+            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+            {
+                LoggerName = ConstantHelper.JobLog,
+                Title = "SendMailJobDefinition Started",
+                Message = "SendMailJobDefinition Started",
+                LogItemProperties = new List<LogItemProperty>() { new LogItemProperty("ServiceName", "JOB") },
+                LogLevel = LogLevel.Info
+            });
             //Debug.WriteLine("DummyJob > " + DateTime.Now);
 
             var schedulerName =context.Scheduler.SchedulerName;
@@ -53,7 +69,6 @@ namespace Quartz.Plugins
 
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(Random.Next(1, 20)));
         }
     }
 }

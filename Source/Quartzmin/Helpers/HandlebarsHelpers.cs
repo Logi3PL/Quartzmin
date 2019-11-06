@@ -67,7 +67,9 @@ namespace Quartzmin.Helpers
                     var template = Handlebars.Compile(source);
                     var output = template(collection[collectionIndex]);
 
-                    o.Write(output);
+                    var encodedOutput = new HtmlEncoder().Encode(output);
+
+                    o.Write(encodedOutput);
                 }
                 else
                 {
