@@ -3,23 +3,24 @@
     <section>
         <label for="sendDataTo">To</label>
         <input type="hidden" name="job.CustomFormData[0].Key" value="to" />
-        <input type="text" name="job.CustomFormData[0].Value" value="{{GetItemProp CustomFormData 0 'Value'}}" id="sendDataTo" />
+        <input type="text" name="job.CustomFormData[0].Value" value="{{{GetItemProp CustomFormData 0 'Value'}}}" id="sendDataTo" />
         <label for="sendDataCc">Cc</label>
         <input type="hidden" name="job.CustomFormData[1].Key" value="cc" />
-        <input type="text" name="job.CustomFormData[1].Value" value="{{GetItemProp CustomFormData 1 'Value'}}" id="sendDataCc" />
+        <input type="text" name="job.CustomFormData[1].Value" value="{{{GetItemProp CustomFormData 1 'Value'}}}" id="sendDataCc" />
         <label for="sendDataBcc">Bcc</label>
         <input type="hidden" name="job.CustomFormData[2].Key" value="bcc" />
-        <input type="text" name="job.CustomFormData[2].Value" value="{{GetItemProp CustomFormData 2 'Value'}}" id="sendDataBcc" />
+        <input type="text" name="job.CustomFormData[2].Value" value="{{{GetItemProp CustomFormData 2 'Value'}}}" id="sendDataBcc" />
         <label for="sendDataSqlQuery">Sql Query</label>
         <input type="hidden" name="job.CustomFormData[3].Key" value="sqlquery" />
-        <input type="text" name="job.CustomFormData[3].Value" value="{{GetItemProp CustomFormData 3 'Value'}}" id="sendDataSqlQuery" />
+        <input type="text" name="job.CustomFormData[3].Value" value="{{{GetItemProp CustomFormData 3 'Value'}}}" id="sendDataSqlQuery" />
         <label for="sendDataSqlQuery">Sql Query To Field</label>
         <input type="hidden" name="job.CustomFormData[12].Key" value="sqlquerytofield" />
-        <input type="text" name="job.CustomFormData[12].Value" value="{{GetItemProp CustomFormData 12 'Value'}}" id="sendDataSqlQueryToField" />
+        <input type="text" name="job.CustomFormData[12].Value" value="{{{GetItemProp CustomFormData 12 'Value'}}}" id="sendDataSqlQueryToField" />
         <label for="sendDataSqlQueryConStr">Sql Query Connection String</label>
         <input type="hidden" name="job.CustomFormData[4].Key" value="sqlqueryconstr" />
-        <input type="text" name="job.CustomFormData[4].Value" value="{{GetItemProp CustomFormData 4 'Value'}}" id="sendDataSqlQueryConStr" />
-        <label for="useSendDataDetailBodyForAll">Herkes icin aynı içerği kullan</label>
+        <input type="text" name="job.CustomFormData[4].Value" value="{{{GetItemProp CustomFormData 4 'Value'}}}" id="sendDataSqlQueryConStr" />
+        <p></p>
+        <label for="useSendDataDetailBodyForAll">Herkes icin ayrı ayrı gönder</label>
         <input type="hidden" name="job.CustomFormData[13].Key" value="usedetailforeveryone" />
         <input type="checkbox" name="job.CustomFormData[13].Value" id="useSendDataDetailBodyForAll" />
     </section>
@@ -27,33 +28,66 @@
     <section>
         <label for="sendDataDetailSubject">Konu</label>
         <input type="hidden" name="job.CustomFormData[5].Key" value="subject" />
-        <input id="sendDataDetailSubject" name="job.CustomFormData[5].Value" value="{{GetItemProp CustomFormData 5 'Value'}}" type="text">
+        <input id="sendDataDetailSubject" name="job.CustomFormData[5].Value" value="{{{GetItemProp CustomFormData 5 'Value'}}}" type="text">
         <label for="sendDataDetailHeader">Başlık</label>
         <input type="hidden" name="job.CustomFormData[6].Key" value="header" />
-        <input id="sendDataDetailHeader" name="job.CustomFormData[6].Value" value="{{GetItemProp CustomFormData 5 'Value'}}" type="text">
-        <label for="sendDataDetailBody">İçerik</label>
+        <input id="sendDataDetailHeader" name="job.CustomFormData[6].Value" value="{{{GetItemProp CustomFormData 6 'Value'}}}" type="text">
+        <label for="sendDataDetailContent">İçerik</label>
         <input type="hidden" name="job.CustomFormData[7].Key" value="body" />
-        <input id="sendDataDetailBody" name="job.CustomFormData[7].Value" value="{{GetItemProp CustomFormData 7 'Value'}}" type="text">
+        <textarea id="sendDataDetailContent" name="job.CustomFormData[7].Value" cols="40" rows="5" style="resize: none;"></textarea>
         <label for="sendDataDetailBody">Detay</label>
         <input type="hidden" name="job.CustomFormData[8].Key" value="detail" />
-        <input id="sendDataDetailBody" name="job.CustomFormData[8].Value" value="{{GetItemProp CustomFormData 8 'Value'}}" type="text">
-        <label for="sendDataDetailBody">Alt Bilgi</label>
+        <input id="sendDataDetailBody" name="job.CustomFormData[8].Value" value="{{{GetItemProp CustomFormData 8 'Value'}}}" type="text">
+        <label for="sendDataDetailFooter">Alt Bilgi</label>
         <input type="hidden" name="job.CustomFormData[9].Key" value="footer" />
-        <input id="sendDataDetailBody" name="job.CustomFormData[9].Value" value="{{GetItemProp CustomFormData 9 'Value'}}" type="text">
+        <input id="sendDataDetailFooter" name="job.CustomFormData[9].Value" value="{{{GetItemProp CustomFormData 9 'Value'}}}" type="text">
         <label for="sendDataDetailSqlQuery">Detail Sql Query</label>
         <input type="hidden" name="job.CustomFormData[10].Key" value="detailsqlquery" />
-        <input type="text" name="job.CustomFormData[10].Value" value="{{GetItemProp CustomFormData 10 'Value'}}" id="sendDataDetailSqlQuery" />
+        <input type="text" name="job.CustomFormData[10].Value" value="{{{GetItemProp CustomFormData 10 'Value'}}}" id="sendDataDetailSqlQuery" />
         <label for="sendDataDetailSqlQueryConStr">Detail Sql Query Connection String</label>
         <input type="hidden" name="job.CustomFormData[11].Key" value="detailsqlqueryconstr" />
-        <input type="text" name="job.CustomFormData[11].Value" value="{{GetItemProp CustomFormData 11 'Value'}}" id="sendDataDetailSqlQueryConStr" />
+        <input type="text" name="job.CustomFormData[11].Value" value="{{{GetItemProp CustomFormData 11 'Value'}}}" id="sendDataDetailSqlQueryConStr" />
     </section>
 </div>
 
-<script>
+<script type="text/javascript">
+
+    function demo() {
+        // code
+        var $editor = $('#sendDataDetailContent');
+        var intellisense = new TextBoxIntellisense('sendDataDetailContent');
+
+        // set the filter mode to filter by using the 'contains' predefined function
+        intellisense.getDecls().setFilterMode('contains');
+
+        // add trigger when the user presses the `.` key or `ctrl+space`
+        intellisense.addDeclarationTrigger({ keyCode: 190 }); // the `.` key
+        intellisense.addDeclarationTrigger({ keyCode: 32, ctrlKey: true, preventDefault: true }); // `ctrl+space`
+
+        // called when the declarations are triggered
+        intellisense.onDeclaration(function (item) {
+            var data = [
+                { name: 'Item #1', value: '``Item #1``', documentation: 'The first item' },
+                { name: 'Item #2', value: '``Item #2``', documentation: 'The second item' },
+                { name: 'Item #3', value: '``Item #3``', documentation: 'The third item' },
+                { name: 'Item #4', value: '``Item #4``', documentation: 'The fourth item' },
+                { name: 'Item #5', value: '``Item #5``', documentation: 'The fifth item' },
+                { name: 'Item #6', value: '``Item #6``', documentation: 'The sixth item' },
+                { name: 'Item #7', value: '``Item #7``', documentation: 'The seventh item' },
+                { name: 'Item #8', value: '``Item #8``', documentation: 'The eighth item' },
+                { name: 'Item #9', value: '``Item #9``', documentation: 'The ningth item' },
+                { name: 'Item #10', value: '``Item #10``', documentation: 'The tenth item' },
+                { name: 'Item #11', value: '``Item #11``', documentation: 'The eleventh item' },
+                { name: 'Item #12', value: '``Item #12``', documentation: 'The twelvth item' }
+            ];
+            intellisense.setDeclarations(data);
+        });
+    }
 
     $(function () {
-        var usedetailforeveryoneData = "{{GetItemProp CustomFormData 13 'Value'}}";
         
+        var usedetailforeveryoneData = "{{{GetItemProp CustomFormData 13 'Value'}}}";
+
         if (usedetailforeveryoneData === "on") {
 
             $('#useSendDataDetailBodyForAll').attr("checked", true);
@@ -71,7 +105,18 @@
             autoFocus: true,
             enableFinishButton: false
         });
+
+        try {
+            debugger;
+            $('#sendDataDetailContent').val("{{{GetItemProp CustomFormData 7 'Value'}}}");
+            //demo();
+        } catch (e) {
+            console.log("demo(); problem");
+        }
     })
 </script>
 <script src="Content/Scripts/jquery.steps.min.js"></script>
+<script src="Content/Scripts/lib/webintellisense.js"></script>
+<script src="Content/Scripts/lib/webintellisense-textbox.js"></script>
+<link href="Content/webintellisense.css" rel="stylesheet" />
 <link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />

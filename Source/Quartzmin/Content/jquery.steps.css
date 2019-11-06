@@ -124,7 +124,7 @@
         display: block;
         margin: 0.5em;
         margin-top:50px;
-        min-height: 35em;
+        min-height: 42em !important;
         position: relative;
         width: auto;
         -webkit-border-radius: 5px;

@@ -10,7 +10,7 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Manager
 {
     public class SendDataSqlQueryManager
     {
-        public static async Task<DataTable> GetQueryData(string sqlConStr,string selectQuery)
+        public static async Task<DataTable> GetQueryData(string sqlConStr,string selectQuery, List<SqlParameter> sqlParameters = null)
         {
             DataTable dataTable = new DataTable();
             try
@@ -25,6 +25,13 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Manager
                     #region Execute Command
                     using (SqlCommand command = new SqlCommand(selectQuery, connectionQueryData))
                     {
+                        if (sqlParameters?.Count>0)
+                        {
+                            foreach (var item in sqlParameters)
+                            {
+                                command.Parameters.Add(new SqlParameter(item.ParameterName, item.Value));
+                            }
+                        }
                         // create data adapter
                         SqlDataAdapter da = new SqlDataAdapter(command);
                         // this will query your database and return the result to your datatable

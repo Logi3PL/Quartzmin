@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Handlebars.Net" Version="1.9.5" />
+    <PackageReference Include="Handlebars.Net" Version="1.10.1" />
     <PackageReference Include="JsonSubTypes" Version="1.5.1" />
     <PackageReference Include="Quartz" Version="3.0.7" />
   </ItemGroup>
@@ -65,7 +65,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Content\Scripts\typings\**" />
+    <Compile Remove="Content\WebIntellisense-master\**" />
+    <EmbeddedResource Remove="Content\Scripts\typings\**" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\**" />
     <None Remove="*.vspscc" />
+    <None Remove="Content\Scripts\typings\**" />
+    <None Remove="Content\WebIntellisense-master\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,8 +82,83 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Remove="Content\Scripts\typings\codemirror\codemirror-matchbrackets.d.ts" />
+    <EmbeddedResource Remove="Content\Scripts\typings\codemirror\codemirror-runmode.d.ts" />
+    <EmbeddedResource Remove="Content\Scripts\typings\codemirror\codemirror-showhint.d.ts" />
+    <EmbeddedResource Remove="Content\Scripts\typings\codemirror\codemirror.d.ts" />
+    <EmbeddedResource Remove="Content\Scripts\typings\codemirror\searchcursor.d.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\.gitattributes" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\.gitignore" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\.nuget\NuGet.Config" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\.nuget\NuGet.exe" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\.nuget\NuGet.targets" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\.nuget\packages.config" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\.vs\config\applicationhost.config" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\build.cmd" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\build.fsx" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\LICENSE" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\nuget\webintellisense.nuspec" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\README.md" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\RELEASE_NOTES.md" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\api.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\bootstrap.min.css" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\character.png" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\folder.png" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\html.png" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\method.png" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\site.css" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\twitter.png" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\css\webintellisense.css" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\demo1.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\demo2.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\demo3.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\demo4.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\demo5.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\demos.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\index.html" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-ace.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-ace.js.map" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-ace.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-codemirror.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-codemirror.js.map" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-codemirror.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-textbox.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-textbox.js.map" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense-textbox.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense.js.map" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\lib\webintellisense.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\ace-1.1.4\ace.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\ace-1.1.4\mode-css.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\ace-1.1.4\mode-html.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\ace-1.1.4\mode-javascript.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\ace-1.1.4\worker-css.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\ace-1.1.4\worker-html.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\ace-1.1.4\worker-javascript.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\bootstrap\bootstrap.min.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\codemirror-4.3\codemirror.css" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\codemirror-4.3\codemirror.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\codemirror-4.3\htmlembedded.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\codemirror-4.3\htmlmixed.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\codemirror-4.3\LICENSE" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\codemirror-4.3\mllike.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\js\references\jquery-2.1.1.min.js" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\packages.config" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Scripts\typings\codemirror\codemirror-matchbrackets.d.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Scripts\typings\codemirror\codemirror-runmode.d.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Scripts\typings\codemirror\codemirror-showhint.d.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Scripts\typings\codemirror\codemirror.d.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Scripts\typings\codemirror\searchcursor.d.ts" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Web.config" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Web.Debug.config" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\Web.Release.config" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\src\WebIntellisense.csproj" />
+    <EmbeddedResource Remove="Content\WebIntellisense-master\WebIntellisense-master\WebIntellisense.sln" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Content\jquery.steps.css" />
-    <None Remove="Views\Partials\SendData\SendDataJobDetailForm.hbs" />
     <None Remove="Views\Partials\SendData\SendDataJobForm.hbs" />
   </ItemGroup>
 

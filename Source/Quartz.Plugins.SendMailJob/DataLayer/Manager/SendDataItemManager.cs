@@ -1,4 +1,6 @@
-﻿using Quartz.Plugins.SendMailJob.DataLayer.Model;
+﻿using HandlebarsDotNet;
+using Newtonsoft.Json;
+using Quartz.Plugins.SendMailJob.DataLayer.Model;
 using Quartz.Plugins.SendMailJob.Models;
 using System;
 using System.Collections.Generic;
@@ -7,6 +9,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Quartz.Plugins.SendMailJob.DataLayer.Manager
@@ -87,8 +90,16 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         {
                             command.Parameters.AddWithValue("@SENTDATE", DBNull.Value);
                         }
+
+                        if (string.IsNullOrEmpty(sendDataDetail.ErrorMsg) == false)
+                        {
+                            command.Parameters.AddWithValue("@ERRORMSG", sendDataDetail.ErrorMsg);
+                        }
+                        else
+                        {
+                            command.Parameters.AddWithValue("@ERRORMSG", DBNull.Value);
+                        }
                         
-                        command.Parameters.AddWithValue("@ERRORMSG", sendDataDetail.ErrorMsg);
                         command.Parameters.AddWithValue("@CREATEDDATE", sendDataDetail.CreatedDate);
 
                         var res = await command.ExecuteNonQueryAsync();
@@ -128,111 +139,238 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var useDetailForEveryoneData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.UseDetailForEveryone);
                 #endregion
 
+                var bodyContent = bodyData.Value;
+
+                var listTemplateTokens = new Dictionary<string,string>();
+                var templateTokenRegexMatchRes = Regex.Matches(bodyContent, @"""\[(.*?)]""");
+                if (templateTokenRegexMatchRes.Count>0)
+                {
+                    foreach (Match item in templateTokenRegexMatchRes)
+                    {
+                        if (item.Success)
+                        {
+                            listTemplateTokens.Add(item.Value.Replace("\"[","").Replace("]\"","").Trim(), item.Value);
+                        }
+                    }
+                }
+
                 sendDataItem.Bcc = bccData.Value;
-                sendDataItem.Body = bodyData.Value;
+
                 sendDataItem.Cc = ccData.Value;
                 sendDataItem.Type = 1; //TODO:Static - Email/Sms
 
-                var toDataSource = new DataTable();
-                var recipients = toData.Value.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var sendDataMailAccounts = await SendDataMailAccountManager.GetMailAccounts();
+                var sendDataMailAccount = sendDataMailAccounts.FirstOrDefault();
 
+                if (sendDataMailAccount == null)
+                {
+                    //TODO: Log
+                    return false;
+                }
+
+                var toDataSource = new DataTable();
+                var detailDataSource = new DataTable();
+
+                var recipients = toData.Value.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                //string[] toDataSourceColumns
                 if (string.IsNullOrEmpty(sqlqueryData.Value) == false)
                 {
                     toDataSource = await SendDataSqlQueryManager.GetQueryData(sqlQueryConnectionString.Value, sqlqueryData.Value);
-
                     if (toDataSource.Rows.Count > 0)
                     {
                         recipients = new List<string>();
 
-                        for (int i = 0; i < toDataSource.Rows.Count - 1; i++)
-                        {
-                            var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
+                        string[] toDataSourceColumnNames = toDataSource.Columns.Cast<DataColumn>()
+                                 .Select(x => x.ColumnName)
+                                 .ToArray();
 
-                            if (string.IsNullOrEmpty(to) == false)
+                        for (int i = 0; i < toDataSource.Rows.Count; i++)
+                        {
+
+                            #region Initialize Tokens From To Select Query
+                            foreach (var col in toDataSourceColumnNames)
                             {
-                                recipients.Add(to);
+                                var bodyContentColumn = "";
+
+                                if (bodyContent.Contains($"@{col.ToLower(new System.Globalization.CultureInfo("en-US"))}@"))
+                                {
+                                    bodyContentColumn = $"@{col.ToLower(new System.Globalization.CultureInfo("en-US"))}@";
+                                }
+
+                                if (bodyContent.Contains($"@{col}@"))
+                                {
+                                    bodyContentColumn = $"@{col}@";
+                                }
+
+                                if (string.IsNullOrEmpty(bodyContentColumn) == false)
+                                {
+                                    var newValue = toDataSource.Rows[i][col]?.ToString();
+                                    bodyContent = bodyContent.Replace(bodyContentColumn, newValue);
+                                }
+                            } 
+                            #endregion
+
+                            if (string.IsNullOrEmpty(detailSqlqueryData.Value) == false)
+                            {
+                                #region Initialize Detail Sqlect Query
+                                var detailQuery = detailSqlqueryData.Value;
+                                List<SqlParameter> parameterList = new List<SqlParameter>();
+
+                                foreach (var col in toDataSourceColumnNames)
+                                {
+                                    if (detailQuery.Contains($"@{col.ToLower(new System.Globalization.CultureInfo("en-US"))}@") ||
+                                        detailQuery.Contains($"@{col}@"))
+                                    {
+                                        parameterList.Add(new SqlParameter($"@{col}@", toDataSource.Rows[i][col]));
+                                    }
+                                } 
+                                #endregion
+
+                                detailDataSource = await SendDataSqlQueryManager.GetQueryData(detailSqlQueryConnectionString.Value, detailQuery, parameterList);
+
+                                string[] detailDataSourceColumnNames = detailDataSource.Columns.Cast<DataColumn>()
+                                             .Select(x => x.ColumnName)
+                                             .ToArray();
+
+                                var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
+
+                                foreach (DataRow item in detailDataSource.Rows)
+                                {
+                                    foreach (var col in detailDataSourceColumnNames)
+                                    {
+                                        if (listTemplateTokens.ContainsKey(col))
+                                        {
+                                            var oldToken = listTemplateTokens[col];
+                                            var newValue = item[col]?.ToString();
+                                            bodyContent = bodyContent.Replace(oldToken, newValue);
+                                        }
+                                        //var val = item[col]?.ToString();
+                                    }
+
+                                    var template = Handlebars.Compile(bodyContent);
+
+                                    bodyContent = template(new { Item = item });
+                                    newSendDataItem.Body = bodyContent;
+                                    newSendDataItem.From = sendDataMailAccount.FromMailAddress;
+
+                                    var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
+
+                                    await SendDataBy(sendDataMailAccount, newSendDataItem,subjectData.Value,bodyContent,new List<string>() {to },useDetailForEveryoneData.Value); 
+                                }
+                                
+                            }
+                            else
+                            {
+                                var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
+
+                                if (string.IsNullOrEmpty(to) == false)
+                                {
+                                    recipients.Add(to);
+                                }
                             }
                         }
-                    }
-                }
-
-                if (recipients.Count>0)
-                {
-                    var sendDataMailAccounts = await SendDataMailAccountManager.GetMailAccounts();
-                    var sendDataMailAccount = sendDataMailAccounts.FirstOrDefault();
-
-                    if (sendDataMailAccount == null)
-                    {
-                        //TODO: Log
-                        return false;
-                    }
-
-                    sendDataItem.MailAccountId = sendDataMailAccount.AccountId;
-                    sendDataItem.From = sendDataMailAccount.FromMailAddress;
-
-                    #region Send Email
-
-                    Action<List<string>> sendMailAction = async (recipientList) =>
-                    {
-                        try
-                        {
-                            sendDataItem.Recipient = recipientList.Aggregate((x, y) => x + ";" + y);
-
-                            var host = sendDataMailAccount.ServerName;
-                            MailMessage mail = new MailMessage();
-                            SmtpClient SmtpServer = new SmtpClient(host);
-
-                            var from = sendDataMailAccount.FromMailAddress;
-                            mail.From = new MailAddress(sendDataItem.From);
-                            
-                            foreach (var recipient in recipientList)
-                            {
-                                mail.To.Add(recipient);
-                            }
-
-                            mail.Subject = subjectData.Value;
-                            mail.Body = bodyData.Value;
-                            mail.IsBodyHtml = true;
-
-                            SmtpServer.Port = sendDataMailAccount.MailSmtpPort;
-                            SmtpServer.Credentials = new System.Net.NetworkCredential(sendDataMailAccount.AccountName, sendDataMailAccount.AccountPass);
-                            SmtpServer.EnableSsl = false;
-
-                            SmtpServer.Send(mail);
-                            sendDataItem.SentDate = DateTimeOffset.Now;
-                        }
-                        catch (Exception ex)
-                        {
-                            //TODO:Logla
-                            sendDataItem.ErrorMsg = ex.Message;
-                        }
-
-                        var saveDataItem = await InsertSendDataItem(sendDataItem);
-                        if (saveDataItem < 1)
-                        {
-                            //TODO: Logla
-                        }
-                    };
-
-                    //herkes icin tek template kullan
-                    if (useDetailForEveryoneData.Value.ToLower() == "on")
-                    {
-                        sendMailAction(recipients);
                     }
                     else
                     {
-                        recipients.AsParallel().ForAll(recipient =>
-                        {
-                            sendMailAction(new List<string>() { recipient });
-                        });
+                        //TODO:
+                    }
 
-                        //foreach (var recipient in recipients)
-                        //{
-                        //    sendMailAction(new List<string>() { recipient });
-                        //}
-                    } 
-                    #endregion
                 }
+                if (recipients.Count > 0)
+                {
+                    var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
+                    await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, bodyContent, recipients, useDetailForEveryoneData.Value);
+                }
+
+                #region Old
+                //if (recipients.Count > 0)
+                //{
+                //    var sendDataMailAccounts = await SendDataMailAccountManager.GetMailAccounts();
+                //    var sendDataMailAccount = sendDataMailAccounts.FirstOrDefault();
+
+                //    if (sendDataMailAccount == null)
+                //    {
+                //        //TODO: Log
+                //        return false;
+                //    }
+
+                //    sendDataItem.MailAccountId = sendDataMailAccount.AccountId;
+                //    sendDataItem.From = sendDataMailAccount.FromMailAddress;
+
+                //    #region Send Email
+
+                //    Action<List<string>> sendMailAction = async (recipientList) =>
+                //    {
+                //        try
+                //        {
+                //            sendDataItem.Recipient = recipientList.Aggregate((x, y) => x + ";" + y);
+
+                //            var host = sendDataMailAccount.ServerName;
+                //            MailMessage mail = new MailMessage();
+                //            SmtpClient SmtpServer = new SmtpClient(host);
+
+                //            var from = sendDataMailAccount.FromMailAddress;
+                //            mail.From = new MailAddress(sendDataItem.From);
+
+                //            foreach (var recipient in recipientList)
+                //            {
+                //                mail.To.Add(recipient);
+                //            }
+
+                //            if (string.IsNullOrEmpty(sendDataItem.Cc) == false)
+                //            {
+                //                mail.CC.Add(sendDataItem.Cc);
+                //            }
+
+                //            if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
+                //            {
+                //                mail.CC.Add(sendDataItem.Bcc);
+                //            }
+
+                //            mail.Subject = subjectData.Value;
+                //            mail.Body = bodyContent;
+                //            mail.IsBodyHtml = true;
+
+                //            SmtpServer.Port = sendDataMailAccount.MailSmtpPort;
+                //            SmtpServer.Credentials = new System.Net.NetworkCredential(sendDataMailAccount.AccountName, sendDataMailAccount.AccountPass);
+                //            SmtpServer.EnableSsl = false;
+
+                //            SmtpServer.Send(mail);
+                //            sendDataItem.SentDate = DateTimeOffset.Now;
+                //        }
+                //        catch (Exception ex)
+                //        {
+                //            //TODO:Logla
+                //            sendDataItem.ErrorMsg = ex.Message;
+                //        }
+
+                //        var saveDataItem = await InsertSendDataItem(sendDataItem);
+                //        if (saveDataItem < 1)
+                //        {
+                //            //TODO: Logla
+                //        }
+                //    };
+
+                //    //herkes icin tek template kullan
+                //    if (useDetailForEveryoneData.Value?.ToLower() == "on")
+                //    {
+                //        sendMailAction(recipients);
+                //    }
+                //    else
+                //    {
+                //        recipients.AsParallel().ForAll(recipient =>
+                //        {
+                //            sendMailAction(new List<string>() { recipient });
+                //        });
+
+                //        //foreach (var recipient in recipients)
+                //        //{
+                //        //    sendMailAction(new List<string>() { recipient });
+                //        //}
+                //    }
+                //    #endregion
+                //} 
+                #endregion
 
                 return true;
             }
@@ -241,6 +379,77 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 //TODO:Log
                 return false;
             }
+        }
+
+        private static async Task SendDataBy(SendDataMailAccount sendDataMailAccount, SendDataItem sendDataItem,string subject,string bodyContent, List<string> recipients,string useDetailForEveryoneDataValue)
+        {
+            #region Send Email
+
+            Action<List<string>> sendMailAction = async (recipientList) =>
+            {
+                try
+                {
+                    sendDataItem.Recipient = recipients.Aggregate((x, y) => x + ";" + y);
+
+                    var host = sendDataMailAccount.ServerName;
+                    MailMessage mail = new MailMessage();
+                    SmtpClient SmtpServer = new SmtpClient(host);
+
+                    var from = sendDataMailAccount.FromMailAddress;
+                    mail.From = new MailAddress(from);
+
+                    foreach (var recipient in recipientList)
+                    {
+                        mail.To.Add(recipient);
+                    }
+
+                    if (string.IsNullOrEmpty(sendDataItem.Cc) == false)
+                    {
+                        mail.CC.Add(sendDataItem.Cc);
+                    }
+
+                    if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
+                    {
+                        mail.CC.Add(sendDataItem.Bcc);
+                    }
+
+                    mail.Subject = subject;
+                    mail.Body = bodyContent;
+                    mail.IsBodyHtml = true;
+
+                    SmtpServer.Port = sendDataMailAccount.MailSmtpPort;
+                    SmtpServer.Credentials = new System.Net.NetworkCredential(sendDataMailAccount.AccountName, sendDataMailAccount.AccountPass);
+                    SmtpServer.EnableSsl = false;
+
+                    SmtpServer.Send(mail);
+                    sendDataItem.SentDate = DateTimeOffset.Now;
+                }
+                catch (Exception ex)
+                {
+                    //TODO:Logla
+                    sendDataItem.ErrorMsg = ex.Message;
+                }
+
+                var saveDataItem = await InsertSendDataItem(sendDataItem);
+                if (saveDataItem < 1)
+                {
+                    //TODO: Logla
+                }
+            };
+
+            //herkes icin tek template kullan
+            if (useDetailForEveryoneDataValue?.ToLower() == "on")
+            {
+                sendMailAction(recipients);
+            }
+            else
+            {
+                recipients.AsParallel().ForAll(recipient =>
+                {
+                    sendMailAction(new List<string>() { recipient });
+                });
+            }
+            #endregion
         }
     }
 }

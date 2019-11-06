@@ -3,6 +3,7 @@ using Quartzmin.Models;
 using Quartzmin.TypeHandlers;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -61,7 +62,7 @@ namespace Quartzmin.Helpers
 
                 if (collection.Count-1 >= collectionIndex)
                 {
-                    var source = "{{"+ a[2] +"}}";
+                    var source = "{{{" + a[2] +"}}}";
 
                     var template = Handlebars.Compile(source);
                     var output = template(collection[collectionIndex]);
