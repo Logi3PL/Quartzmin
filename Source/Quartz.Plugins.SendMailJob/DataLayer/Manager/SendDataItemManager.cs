@@ -429,7 +429,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     var from = sendDataMailAccount.FromMailAddress;
                     mail.From = new MailAddress(from);
 
-                    foreach (var recipient in recipientList)
+                    foreach (var recipient in recipientList.Distinct())
                     {
                         mail.To.Add(recipient);
                     }
@@ -441,7 +441,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                     if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
                     {
-                        mail.CC.Add(sendDataItem.Bcc);
+                        mail.Bcc.Add(sendDataItem.Bcc);
                     }
 
                     mail.Subject = subject;
