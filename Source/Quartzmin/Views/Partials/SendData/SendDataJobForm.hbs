@@ -14,8 +14,8 @@
         <input type="hidden" name="job.CustomFormData[3].Key" value="sqlquery" />
         <input type="text" name="job.CustomFormData[3].Value" value="{{{GetItemProp CustomFormData 3 'Value'}}}" id="sendDataSqlQuery" />
         <label for="sendDataSqlQuery">Sql Query To Field</label>
-        <input type="hidden" name="job.CustomFormData[12].Key" value="sqlquerytofield" />
-        <input type="text" name="job.CustomFormData[12].Value" value="{{{GetItemProp CustomFormData 12 'Value'}}}" id="sendDataSqlQueryToField" />
+        <input type="hidden" name="job.CustomFormData[11].Key" value="sqlquerytofield" />
+        <input type="text" name="job.CustomFormData[11].Value" value="{{{GetItemProp CustomFormData 11 'Value'}}}" id="sendDataSqlQueryToField" />
         <label for="sendDataSqlQueryConStr">Sql Query Connection String</label>
         <input type="hidden" name="job.CustomFormData[4].Key" value="sqlqueryconstr" />
         <input type="text" name="job.CustomFormData[4].Value" value="{{{GetItemProp CustomFormData 4 'Value'}}}" id="sendDataSqlQueryConStr" />
@@ -35,19 +35,19 @@
         <label for="sendDataDetailContent">İçerik</label>
         <input type="hidden" name="job.CustomFormData[7].Key" value="body" />
         <textarea id="sendDataDetailContent" name="job.CustomFormData[7].Value" cols="40" rows="5" style="resize: none;"></textarea>
-        <label for="sendDataDetailBody">Detay</label>
-        <input type="hidden" name="job.CustomFormData[8].Key" value="detail" />
-        <input id="sendDataDetailBody" name="job.CustomFormData[8].Value" value="{{{GetItemProp CustomFormData 8 'Value'}}}" type="text">
         <label for="sendDataDetailFooter">Alt Bilgi</label>
-        <input type="hidden" name="job.CustomFormData[9].Key" value="footer" />
-        <input id="sendDataDetailFooter" name="job.CustomFormData[9].Value" value="{{{GetItemProp CustomFormData 9 'Value'}}}" type="text">
+        <input type="hidden" name="job.CustomFormData[8].Key" value="footer" />
+        <input id="sendDataDetailFooter" name="job.CustomFormData[8].Value" value="{{{GetItemProp CustomFormData 8 'Value'}}}" type="text">
         <label for="sendDataDetailSqlQuery">Detail Sql Query</label>
-        <input type="hidden" name="job.CustomFormData[10].Key" value="detailsqlquery" />
-        <input type="text" name="job.CustomFormData[10].Value" value="{{{GetItemProp CustomFormData 10 'Value'}}}" id="sendDataDetailSqlQuery" />
+        <input type="hidden" name="job.CustomFormData[9].Key" value="detailsqlquery" />
+        <input type="text" name="job.CustomFormData[9].Value" value="{{{GetItemProp CustomFormData 9 'Value'}}}" id="sendDataDetailSqlQuery" />
         <label for="sendDataDetailSqlQueryConStr">Detail Sql Query Connection String</label>
-        <input type="hidden" name="job.CustomFormData[11].Key" value="detailsqlqueryconstr" />
-        <input type="text" name="job.CustomFormData[11].Value" value="{{{GetItemProp CustomFormData 11 'Value'}}}" id="sendDataDetailSqlQueryConStr" />
-
+        <input type="hidden" name="job.CustomFormData[10].Key" value="detailsqlqueryconstr" />
+        <input type="text" name="job.CustomFormData[10].Value" value="{{{GetItemProp CustomFormData 10 'Value'}}}" id="sendDataDetailSqlQueryConStr" />
+        <p></p>
+        <label for="useSendDataDetailQueryForTemplate">Detay sorgunun her satırı bir mail olsun</label>
+        <input type="hidden" name="job.CustomFormData[12].Key" value="usesenddatadetailqueryfortemplate" />
+        <input type="checkbox" name="job.CustomFormData[12].Value" id="useSendDataDetailQueryForTemplate" />
     </section>
 </div>
 
@@ -96,6 +96,17 @@
         } else {
 
             $('#useSendDataDetailBodyForAll').attr("checked", false);
+
+        }
+
+        var useSendDataDetailQueryForTemplate = "{{{GetItemProp CustomFormData 12 'Value'}}}";
+        if (useSendDataDetailQueryForTemplate === "on") {
+
+            $('#useSendDataDetailQueryForTemplate').attr("checked", true);
+
+        } else {
+
+            $('#useSendDataDetailQueryForTemplate').attr("checked", false);
 
         }
 

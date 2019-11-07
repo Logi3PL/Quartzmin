@@ -8,6 +8,7 @@ namespace Quartz.Plugins.SendMailJob
     {
         public const string JobLog = "JOB";
         public const string CustomData = "CustomData";
+        public const string DataSourceKey = "DataSource";
 
         public static string GetConnectionString()
         {
@@ -29,7 +30,7 @@ namespace Quartz.Plugins.SendMailJob
             public const string Subject = "subject";
             public const string Header = "header";
             public const string Body = "body";
-            public const string Detail = "detail";
+            public const string UseSendDataDetailQueryForTemplate = "usesenddatadetailqueryfortemplate";
             public const string UseDetailForEveryone = "usedetailforeveryone";
             public const string Footer = "footer";
             public const string DetailSqlquery = "detailsqlquery";

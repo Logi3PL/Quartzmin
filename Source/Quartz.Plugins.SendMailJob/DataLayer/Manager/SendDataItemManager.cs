@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
@@ -183,7 +184,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var footerData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Footer);
                 var detailSqlQueryConnectionString = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.DetailSqlQueryConnectionString);
                 var detailSqlqueryData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.DetailSqlquery);
-                var detailData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Detail);
+                var useSendDataDetailQueryForTemplateData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.UseSendDataDetailQueryForTemplate);
                 var ccData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Cc);
                 var bodyData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Body);
                 var bccData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Bcc);
@@ -285,8 +286,19 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                     {
                                         parameterList.Add(new SqlParameter($"@{col}@", toDataSource.Rows[i][col]));
                                     }
-                                } 
+                                }
                                 #endregion
+
+                                foreach (var col in toDataSourceColumnNames)
+                                {
+                                    if (listTemplateTokens.ContainsKey(col))
+                                    {
+                                        var oldToken = listTemplateTokens[col];
+                                        var newValue = toDataSource.Rows[i][col]?.ToString();
+                                        bodyContent = bodyContent.Replace(oldToken, newValue);
+                                    }
+                                    //var val = item[col]?.ToString();
+                                }
 
                                 detailDataSource = await SendDataSqlQueryManager.GetQueryData(detailSqlQueryConnectionString.Value, detailQuery, parameterList);
 
@@ -296,28 +308,48 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                                 var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
 
-                                foreach (DataRow item in detailDataSource.Rows)
+                                //detay sorgunun her bir satırı için bir mail mi yoksa detay sorguyu template içinde kullanmak mı ?
+                                if (useSendDataDetailQueryForTemplateData.Value?.ToLower() == "on")
                                 {
-                                    foreach (var col in detailDataSourceColumnNames)
-                                    {
-                                        if (listTemplateTokens.ContainsKey(col))
-                                        {
-                                            var oldToken = listTemplateTokens[col];
-                                            var newValue = item[col]?.ToString();
-                                            bodyContent = bodyContent.Replace(oldToken, newValue);
-                                        }
-                                        //var val = item[col]?.ToString();
-                                    }
+                                    bodyContent = bodyContent.Replace("\"[", "{{{").Replace("]\"", "}}}");
 
+                                    var jsonDataSource = JsonConvert.SerializeObject(detailDataSource);
+                                    var jsonDataSourceExpando = JsonConvert.DeserializeObject<List<ExpandoObject>>(jsonDataSource);
                                     var template = Handlebars.Compile(bodyContent);
 
-                                    bodyContent = template(new { Item = item });
+                                    bodyContent = template(new { DataSource = jsonDataSourceExpando });
                                     newSendDataItem.Body = bodyContent;
                                     newSendDataItem.From = sendDataMailAccount.FromMailAddress;
 
                                     var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
 
-                                    await SendDataBy(sendDataMailAccount, newSendDataItem,subjectData.Value,bodyContent,new List<string>() {to },useDetailForEveryoneData.Value); 
+                                    await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, bodyContent, new List<string>() { to }, useDetailForEveryoneData.Value);
+                                }
+                                else
+                                {
+                                    foreach (DataRow item in detailDataSource.Rows)
+                                    {
+                                        foreach (var col in detailDataSourceColumnNames)
+                                        {
+                                            if (listTemplateTokens.ContainsKey(col))
+                                            {
+                                                var oldToken = listTemplateTokens[col];
+                                                var newValue = item[col]?.ToString();
+                                                bodyContent = bodyContent.Replace(oldToken, newValue);
+                                            }
+                                            //var val = item[col]?.ToString();
+                                        }
+
+                                        var template = Handlebars.Compile(bodyContent);
+
+                                        bodyContent = template(new { Item = item });
+                                        newSendDataItem.Body = bodyContent;
+                                        newSendDataItem.From = sendDataMailAccount.FromMailAddress;
+
+                                        var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
+
+                                        await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, bodyContent, new List<string>() { to }, useDetailForEveryoneData.Value);
+                                    }
                                 }
                                 
                             }
