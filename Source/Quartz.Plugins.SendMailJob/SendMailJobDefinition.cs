@@ -7,6 +7,7 @@ using Slf;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -65,7 +66,28 @@ namespace Quartz.Plugins
                     Active = 1
                 };
 
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 await SendDataItemManager.GenerateSendDataItemFrom(customFormDataModel, sendDataItem);
+
+                stopwatch.Stop();
+
+                if (context.JobDetail.JobDataMap.GetBoolean("trace"))
+                {
+                    LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                    {
+                        LoggerName = ConstantHelper.JobLog,
+                        Title = "GenerateSendDataItemFrom Executed",
+                        Message = "GenerateSendDataItemFrom Executed",
+                        LogItemProperties = new List<LogItemProperty>() {
+                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                                new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
+                            },
+                        LogLevel = LogLevel.Trace
+                    });
+                }
 
             }
 

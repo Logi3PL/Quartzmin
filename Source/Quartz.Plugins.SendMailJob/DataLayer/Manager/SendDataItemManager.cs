@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
@@ -21,6 +22,9 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Manager
         {
             try
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 var conStr = ConstantHelper.GetConnectionString();
                 using (SqlConnection connection = new SqlConnection(conStr))
                 {
@@ -105,6 +109,40 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                         var res = await command.ExecuteNonQueryAsync();
 
+                        stopwatch.Stop();
+
+                        if (res<1)
+                        {
+                            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                            {
+                                LoggerName = ConstantHelper.JobLog,
+                                Title = "InsertSendDataItem Executed",
+                                Message = "InsertSendDataItem Executed",
+                                LogItemProperties = new List<LogItemProperty>() {
+                                    new LogItemProperty("ServiceName", "JOB") ,
+                                    new LogItemProperty("ActionName", "InsertSendDataItem"),
+                                    new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
+                                },
+                                Exception =new ArgumentException("Insert Failed !"),
+                                LogLevel = LogLevel.Error
+                            });
+                        }
+                        else
+                        {
+                            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                            {
+                                LoggerName = ConstantHelper.JobLog,
+                                Title = "InsertSendDataItem Executed",
+                                Message = "InsertSendDataItem Executed",
+                                LogItemProperties = new List<LogItemProperty>() {
+                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("ActionName", "InsertSendDataItem"),
+                                new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
+                            },
+                                LogLevel = LogLevel.Trace
+                            });
+                        }
+
                         return res;
                     }
                     #endregion
@@ -177,7 +215,18 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                 if (sendDataMailAccount == null)
                 {
-                    //TODO: Log
+                    LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                    {
+                        LoggerName = ConstantHelper.JobLog,
+                        Title = "GenerateSendDataItemFrom GetMailAccounts Not Found",
+                        Message = "GetMailAccounts Not Found",
+                        LogItemProperties = new List<LogItemProperty>() {
+                                        new LogItemProperty("ServiceName", "JOB") ,
+                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom")
+                                    },
+                        LogLevel = LogLevel.Error,
+                        Exception = new ArgumentException("GetMailAccounts Not Found")
+                    });
                     return false;
                 }
 
@@ -286,6 +335,18 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     else
                     {
                         //TODO:
+                        LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                        {
+                            LoggerName = ConstantHelper.JobLog,
+                            Title = "GenerateSendDataItemFrom SqlqueryData Row Count = 0",
+                            Message = "SqlqueryData Row Count = 0",
+                            LogItemProperties = new List<LogItemProperty>() {
+                                        new LogItemProperty("ServiceName", "JOB") ,
+                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom")
+                                    },
+                            LogLevel = LogLevel.Error,
+                            Exception = new ArgumentException("SqlqueryData Row Count = 0")
+                        });
                     }
 
                 }
@@ -294,96 +355,6 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
                     await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, bodyContent, recipients, useDetailForEveryoneData.Value);
                 }
-
-                #region Old
-                //if (recipients.Count > 0)
-                //{
-                //    var sendDataMailAccounts = await SendDataMailAccountManager.GetMailAccounts();
-                //    var sendDataMailAccount = sendDataMailAccounts.FirstOrDefault();
-
-                //    if (sendDataMailAccount == null)
-                //    {
-                //        //TODO: Log
-                //        return false;
-                //    }
-
-                //    sendDataItem.MailAccountId = sendDataMailAccount.AccountId;
-                //    sendDataItem.From = sendDataMailAccount.FromMailAddress;
-
-                //    #region Send Email
-
-                //    Action<List<string>> sendMailAction = async (recipientList) =>
-                //    {
-                //        try
-                //        {
-                //            sendDataItem.Recipient = recipientList.Aggregate((x, y) => x + ";" + y);
-
-                //            var host = sendDataMailAccount.ServerName;
-                //            MailMessage mail = new MailMessage();
-                //            SmtpClient SmtpServer = new SmtpClient(host);
-
-                //            var from = sendDataMailAccount.FromMailAddress;
-                //            mail.From = new MailAddress(sendDataItem.From);
-
-                //            foreach (var recipient in recipientList)
-                //            {
-                //                mail.To.Add(recipient);
-                //            }
-
-                //            if (string.IsNullOrEmpty(sendDataItem.Cc) == false)
-                //            {
-                //                mail.CC.Add(sendDataItem.Cc);
-                //            }
-
-                //            if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
-                //            {
-                //                mail.CC.Add(sendDataItem.Bcc);
-                //            }
-
-                //            mail.Subject = subjectData.Value;
-                //            mail.Body = bodyContent;
-                //            mail.IsBodyHtml = true;
-
-                //            SmtpServer.Port = sendDataMailAccount.MailSmtpPort;
-                //            SmtpServer.Credentials = new System.Net.NetworkCredential(sendDataMailAccount.AccountName, sendDataMailAccount.AccountPass);
-                //            SmtpServer.EnableSsl = false;
-
-                //            SmtpServer.Send(mail);
-                //            sendDataItem.SentDate = DateTimeOffset.Now;
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            //TODO:Logla
-                //            sendDataItem.ErrorMsg = ex.Message;
-                //        }
-
-                //        var saveDataItem = await InsertSendDataItem(sendDataItem);
-                //        if (saveDataItem < 1)
-                //        {
-                //            //TODO: Logla
-                //        }
-                //    };
-
-                //    //herkes icin tek template kullan
-                //    if (useDetailForEveryoneData.Value?.ToLower() == "on")
-                //    {
-                //        sendMailAction(recipients);
-                //    }
-                //    else
-                //    {
-                //        recipients.AsParallel().ForAll(recipient =>
-                //        {
-                //            sendMailAction(new List<string>() { recipient });
-                //        });
-
-                //        //foreach (var recipient in recipients)
-                //        //{
-                //        //    sendMailAction(new List<string>() { recipient });
-                //        //}
-                //    }
-                //    #endregion
-                //} 
-                #endregion
 
                 return true;
             }
@@ -410,6 +381,8 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
         private static async Task SendDataBy(SendDataMailAccount sendDataMailAccount, SendDataItem sendDataItem,string subject,string bodyContent, List<string> recipients,string useDetailForEveryoneDataValue)
         {
             #region Send Email
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             Action<List<string>> sendMailAction = async (recipientList) =>
             {
@@ -452,7 +425,6 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 }
                 catch (Exception ex)
                 {
-                    //TODO:Logla
                     sendDataItem.ErrorMsg = ex.Message;
 
                     LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
@@ -471,10 +443,6 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 }
 
                 var saveDataItem = await InsertSendDataItem(sendDataItem);
-                if (saveDataItem < 1)
-                {
-                    //TODO: Logla
-                }
             };
 
             //herkes icin tek template kullan
@@ -489,6 +457,21 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     sendMailAction(new List<string>() { recipient });
                 });
             }
+
+            stopwatch.Stop();
+
+            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+            {
+                LoggerName = ConstantHelper.JobLog,
+                Title = "SendDataBy Executed",
+                Message = "SendDataBy Executed",
+                LogItemProperties = new List<LogItemProperty>() {
+                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("ActionName", "SendDataBy"),
+                                new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
+                            },
+                LogLevel = LogLevel.Trace
+            });
             #endregion
         }
     }

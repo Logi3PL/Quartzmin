@@ -47,6 +47,10 @@
         <label for="sendDataDetailSqlQueryConStr">Detail Sql Query Connection String</label>
         <input type="hidden" name="job.CustomFormData[11].Key" value="detailsqlqueryconstr" />
         <input type="text" name="job.CustomFormData[11].Value" value="{{{GetItemProp CustomFormData 11 'Value'}}}" id="sendDataDetailSqlQueryConStr" />
+        <p></p>
+        <label for="useSendDataDetailQueryForTemplate">Detay sorguyu template icinde kullan</label>
+        <input type="hidden" name="job.CustomFormData[13].Key" value="usedetailforeveryone" />
+        <input type="checkbox" name="job.CustomFormData[13].Value" id="useSendDataDetailBodyForAll" />
     </section>
 </div>
 
@@ -108,7 +112,8 @@
 
         try {
             debugger;
-            $('#sendDataDetailContent').html(unescape("{{{GetItemProp CustomFormData 7 'Value'}}}"));
+
+            $('#sendDataDetailContent').html(`{{{GetItemProp CustomFormData 7 'Value'}}}`);
             //demo();
         } catch (e) {
             console.log("demo(); problem");
