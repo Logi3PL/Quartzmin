@@ -120,7 +120,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                 Title = "InsertSendDataItem Executed",
                                 Message = "InsertSendDataItem Executed",
                                 LogItemProperties = new List<LogItemProperty>() {
-                                    new LogItemProperty("ServiceName", "JOB") ,
+                                    new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                     new LogItemProperty("ActionName", "InsertSendDataItem"),
                                     new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
                                 },
@@ -136,7 +136,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                 Title = "InsertSendDataItem Executed",
                                 Message = "InsertSendDataItem Executed",
                                 LogItemProperties = new List<LogItemProperty>() {
-                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                 new LogItemProperty("ActionName", "InsertSendDataItem"),
                                 new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
                             },
@@ -158,7 +158,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     Title = "InsertSendDataItem Error",
                     Message = ex.Message,
                     LogItemProperties = new List<LogItemProperty>() {
-                        new LogItemProperty("ServiceName", "JOB") ,
+                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                         new LogItemProperty("ActionName", "InsertSendDataItem"),
                         new LogItemProperty("FormData", sendDataDetail),
                     },
@@ -222,7 +222,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         Title = "GenerateSendDataItemFrom GetMailAccounts Not Found",
                         Message = "GetMailAccounts Not Found",
                         LogItemProperties = new List<LogItemProperty>() {
-                                        new LogItemProperty("ServiceName", "JOB") ,
+                                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                         new LogItemProperty("ActionName", "GenerateSendDataItemFrom")
                                     },
                         LogLevel = LogLevel.Error,
@@ -235,6 +235,95 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var detailDataSource = new DataTable();
 
                 var recipients = toData.Value.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                /*TODO: 
+                 - Validsyon1 => To ve Detail Sql var ama detail sql sonuç dönmüyorsa ?
+                 */
+
+                Action<List<string>,string, List<KeyValuePair<string,object>>> invokeDetailQuery = async (to,changedBodyContent,columnNames) =>
+                {
+                    #region Invoke
+                    #region Initialize Detail Sqlect Query
+                    var detailQuery = detailSqlqueryData.Value.Replace("@[", "@").Replace("]@", "@");
+                    List<SqlParameter> parameterList = new List<SqlParameter>();
+
+                    if (columnNames?.Count>0)
+                    {
+                        foreach (var col in columnNames)
+                        {
+                            if (detailQuery.Contains($"@{col.Key.ToLower(new System.Globalization.CultureInfo("en-US"))}@") ||
+                                detailQuery.Contains($"@{col.Key}@"))
+                            {
+                                parameterList.Add(new SqlParameter($"@{col.Key}@", col.Value));
+                            }
+                        }
+                    
+                        foreach (var col in columnNames)
+                        {
+                            if (listTemplateTokens.ContainsKey(col.Key))
+                            {
+                                var oldToken = listTemplateTokens[col.Key];
+                                var newValue = col.Value?.ToString();
+                                changedBodyContent = changedBodyContent.Replace(oldToken, newValue);
+                            }
+                        }                    
+                    }
+
+                    #endregion
+
+                    detailDataSource = await SendDataSqlQueryManager.GetQueryData(detailSqlQueryConnectionString.Value, detailQuery, parameterList);
+
+                    string[] detailDataSourceColumnNames = detailDataSource.Columns.Cast<DataColumn>()
+                                 .Select(x => x.ColumnName)
+                                 .ToArray();
+
+                    var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
+
+                    //detay sorgunun her bir satırı için bir mail mi yoksa detay sorguyu template içinde kullanmak mı ?
+                    if (useSendDataDetailQueryForTemplateData.Value?.ToLower() == "on")
+                    {
+                        changedBodyContent = changedBodyContent.Replace("\"[", "{{{").Replace("]\"", "}}}");
+
+                        var jsonDataSource = JsonConvert.SerializeObject(detailDataSource);
+                        var jsonDataSourceExpando = JsonConvert.DeserializeObject<List<ExpandoObject>>(jsonDataSource);
+                        var template = Handlebars.Compile(changedBodyContent);
+
+                        changedBodyContent = template(new { DataSource = jsonDataSourceExpando });
+                        newSendDataItem.Body = changedBodyContent;
+                        newSendDataItem.From = sendDataMailAccount.FromMailAddress;
+
+                        //var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString().Trim().Replace("[", "").Replace("]", "");
+
+                        await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, changedBodyContent, to, useDetailForEveryoneData.Value);
+                    }
+                    else
+                    {
+                        foreach (DataRow item in detailDataSource.Rows)
+                        {
+                            foreach (var col in detailDataSourceColumnNames)
+                            {
+                                if (listTemplateTokens.ContainsKey(col))
+                                {
+                                    var oldToken = listTemplateTokens[col];
+                                    var newValue = item[col]?.ToString();
+                                    changedBodyContent = changedBodyContent.Replace(oldToken, newValue);
+                                }
+                                //var val = item[col]?.ToString();
+                            }
+
+                            var template = Handlebars.Compile(changedBodyContent);
+
+                            changedBodyContent = template(new { Item = item });
+                            newSendDataItem.Body = changedBodyContent;
+                            newSendDataItem.From = sendDataMailAccount.FromMailAddress;
+
+                            //var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
+
+                            await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, changedBodyContent, to, useDetailForEveryoneData.Value);
+                        }
+                    }
+                    #endregion
+                };
+
                 //string[] toDataSourceColumns
                 if (string.IsNullOrEmpty(sqlqueryData.Value) == false)
                 {
@@ -243,15 +332,15 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     {
                         recipients = new List<string>();
 
-                        string[] toDataSourceColumnNames = toDataSource.Columns.Cast<DataColumn>()
+                        var toDataSourceColumnNames = toDataSource.Columns.Cast<DataColumn>()
                                  .Select(x => x.ColumnName)
-                                 .ToArray();
+                                 .ToList();
 
                         Func<string, string, string, string> replaceStringFromToQuery = (sourceString, key, newData) =>
                          {
                              var changedStr = sourceString.ToString();
 
-                             var contentColumn = sourceString.ToString();
+                             var contentColumn = "";
 
                              if (sourceString.Contains(key))
                              {
@@ -268,141 +357,70 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                         for (int i = 0; i < toDataSource.Rows.Count; i++)
                         {
-                            var changedBodyContent = bodyContent.ToString();
-
-                            #region Initialize Tokens From To Select Query
-                            foreach (var col in toDataSourceColumnNames)
+                            try
                             {
-                                var newValue = toDataSource.Rows[i][col]?.ToString();
-                                var bodyContentColumn = "";
+                                var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString().Trim().Replace("[", "").Replace("]", "");
 
-                                if (changedBodyContent.Contains($"@{col.ToLower(new System.Globalization.CultureInfo("en-US"))}@"))
-                                {
-                                    bodyContentColumn = $"@{col.ToLower(new System.Globalization.CultureInfo("en-US"))}@";
-                                }
+                                var changedBodyContent = bodyContent.ToString();
 
-                                if (changedBodyContent.Contains($"@{col}@"))
-                                {
-                                    bodyContentColumn = $"@{col}@";
-                                }
-
-                                //if (string.IsNullOrEmpty(bodyContentColumn) == false)
-                                //{
-                                //    var newValue = toDataSource.Rows[i][col]?.ToString();
-                                //    changedBodyContent = changedBodyContent.Replace(bodyContentColumn, newValue);
-                                //}
-
-                                changedBodyContent = replaceStringFromToQuery(changedBodyContent, bodyContentColumn, newValue);
-
-                                changedBodyContent = changedBodyContent.Replace("\"[HEADER]\"", replaceStringFromToQuery(headerData.Value, bodyContentColumn, newValue));
-
-                                changedBodyContent = changedBodyContent.Replace("\"[FOOTER]\"", replaceStringFromToQuery(footerData.Value, bodyContentColumn, newValue));
-                            }
-                            #endregion
-
-                            
-
-                            if (string.IsNullOrEmpty(detailSqlqueryData.Value) == false)
-                            {
-                                #region Initialize Detail Sqlect Query
-                                var detailQuery = detailSqlqueryData.Value.Replace("@[","@").Replace("]@", "@");
-                                List<SqlParameter> parameterList = new List<SqlParameter>();
-
+                                #region Initialize Tokens From To Select Query
                                 foreach (var col in toDataSourceColumnNames)
                                 {
-                                    if (detailQuery.Contains($"@{col.ToLower(new System.Globalization.CultureInfo("en-US"))}@") ||
-                                        detailQuery.Contains($"@{col}@"))
-                                    {
-                                        parameterList.Add(new SqlParameter($"@{col}@", toDataSource.Rows[i][col]));
-                                    }
+                                    var newValue = toDataSource.Rows[i][col]?.ToString();
+
+                                    var lowerColumn = $"@{col.ToLower(new System.Globalization.CultureInfo("en-US"))}@";
+                                    var column = $"@{col}@";
+
+                                    changedBodyContent = replaceStringFromToQuery(changedBodyContent, lowerColumn, newValue);
+
+                                    changedBodyContent = replaceStringFromToQuery(changedBodyContent, column, newValue);
+
+                                    changedBodyContent = changedBodyContent.Replace("\"[HEADER]\"", replaceStringFromToQuery(headerData.Value, lowerColumn, newValue));
+
+                                    changedBodyContent = changedBodyContent.Replace("\"[FOOTER]\"", replaceStringFromToQuery(footerData.Value, column, newValue));
                                 }
                                 #endregion
 
-                                foreach (var col in toDataSourceColumnNames)
+                                if (string.IsNullOrEmpty(detailSqlqueryData.Value) == false)
                                 {
-                                    if (listTemplateTokens.ContainsKey(col))
-                                    {
-                                        var oldToken = listTemplateTokens[col];
-                                        var newValue = toDataSource.Rows[i][col]?.ToString();
-                                        changedBodyContent = changedBodyContent.Replace(oldToken, newValue);
-                                    }
-                                    //var val = item[col]?.ToString();
-                                }
+                                    var columnDatas = toDataSourceColumnNames.Select(colName=>new KeyValuePair<string,object>(colName, toDataSource.Rows[i][colName])).ToList();
 
-                                detailDataSource = await SendDataSqlQueryManager.GetQueryData(detailSqlQueryConnectionString.Value, detailQuery, parameterList);
-
-                                string[] detailDataSourceColumnNames = detailDataSource.Columns.Cast<DataColumn>()
-                                             .Select(x => x.ColumnName)
-                                             .ToArray();
-
-                                var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
-
-                                //detay sorgunun her bir satırı için bir mail mi yoksa detay sorguyu template içinde kullanmak mı ?
-                                if (useSendDataDetailQueryForTemplateData.Value?.ToLower() == "on")
-                                {
-                                    changedBodyContent = changedBodyContent.Replace("\"[", "{{{").Replace("]\"", "}}}");
-
-                                    var jsonDataSource = JsonConvert.SerializeObject(detailDataSource);
-                                    var jsonDataSourceExpando = JsonConvert.DeserializeObject<List<ExpandoObject>>(jsonDataSource);
-                                    var template = Handlebars.Compile(changedBodyContent);
-
-                                    changedBodyContent = template(new { DataSource = jsonDataSourceExpando });
-                                    newSendDataItem.Body = changedBodyContent;
-                                    newSendDataItem.From = sendDataMailAccount.FromMailAddress;
-
-                                    var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString().Trim().Replace("[","").Replace("]", "");
-
-                                    await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, changedBodyContent, new List<string>() { to }, useDetailForEveryoneData.Value);
+                                    invokeDetailQuery(new List<string>() { to }, changedBodyContent, columnDatas);
                                 }
                                 else
                                 {
-                                    foreach (DataRow item in detailDataSource.Rows)
+                                    if (string.IsNullOrEmpty(to) == false)
                                     {
-                                        foreach (var col in detailDataSourceColumnNames)
-                                        {
-                                            if (listTemplateTokens.ContainsKey(col))
-                                            {
-                                                var oldToken = listTemplateTokens[col];
-                                                var newValue = item[col]?.ToString();
-                                                changedBodyContent = changedBodyContent.Replace(oldToken, newValue);
-                                            }
-                                            //var val = item[col]?.ToString();
-                                        }
-
-                                        var template = Handlebars.Compile(changedBodyContent);
-
-                                        changedBodyContent = template(new { Item = item });
-                                        newSendDataItem.Body = changedBodyContent;
-                                        newSendDataItem.From = sendDataMailAccount.FromMailAddress;
-
-                                        var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
-
-                                        await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, changedBodyContent, new List<string>() { to }, useDetailForEveryoneData.Value);
+                                        recipients.Add(to);
                                     }
                                 }
-                                
                             }
-                            else
+                            catch (Exception exFor)
                             {
-                                var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
-
-                                if (string.IsNullOrEmpty(to) == false)
+                                LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
                                 {
-                                    recipients.Add(to);
-                                }
+                                    LoggerName = ConstantHelper.JobLog,
+                                    Title = "GenerateSendDataItemFrom SqlqueryData Loop Error",
+                                    Message = exFor.Message,
+                                    LogItemProperties = new List<LogItemProperty>() {
+                                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
+                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom")
+                                    },
+                                    LogLevel = LogLevel.Error,
+                                    Exception = exFor
+                                });
                             }
                         }
                     }
                     else
                     {
-                        //TODO:
                         LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
                         {
                             LoggerName = ConstantHelper.JobLog,
                             Title = "GenerateSendDataItemFrom SqlqueryData Row Count = 0",
                             Message = "SqlqueryData Row Count = 0",
                             LogItemProperties = new List<LogItemProperty>() {
-                                        new LogItemProperty("ServiceName", "JOB") ,
+                                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                         new LogItemProperty("ActionName", "GenerateSendDataItemFrom")
                                     },
                             LogLevel = LogLevel.Error,
@@ -411,7 +429,11 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     }
 
                 }
-                if (recipients.Count > 0)
+                else if (string.IsNullOrEmpty(detailSqlqueryData.Value) == false)
+                {
+                    invokeDetailQuery(recipients, bodyContent, null);
+                }
+                else if (recipients.Count > 0)
                 {
                     var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
                     await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, bodyContent, recipients, useDetailForEveryoneData.Value);
@@ -427,7 +449,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     Title = "GenerateSendDataItemFrom Error",
                     Message = ex.Message,
                     LogItemProperties = new List<LogItemProperty>() {
-                        new LogItemProperty("ServiceName", "JOB") ,
+                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                         new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
                         new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel, SendDataItem = sendDataItem}),
                     },
@@ -494,7 +516,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         Title = "GenerateSendDataItemFrom Error",
                         Message = ex.Message,
                         LogItemProperties = new List<LogItemProperty>() {
-                            new LogItemProperty("ServiceName", "JOB") ,
+                            new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                             new LogItemProperty("ActionName", "SendMailAction"),
                             new LogItemProperty("FormData", recipientList),
                         },
@@ -527,7 +549,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 Title = "SendDataBy Executed",
                 Message = "SendDataBy Executed",
                 LogItemProperties = new List<LogItemProperty>() {
-                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                 new LogItemProperty("ActionName", "SendDataBy"),
                                 new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
                             },

@@ -57,7 +57,7 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Manager
                     Title = "GetQueryData Error",
                     Message = ex.Message,
                     LogItemProperties = new List<LogItemProperty>() {
-                        new LogItemProperty("ServiceName", "JOB") ,
+                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                         new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
                         new LogItemProperty("selectQuery", selectQuery)
                     },

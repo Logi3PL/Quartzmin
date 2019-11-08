@@ -33,7 +33,7 @@ namespace Quartz.Plugins
                 LoggerName = ConstantHelper.JobLog,
                 Title = "SendMailJobDefinition Started",
                 Message = "SendMailJobDefinition Started",
-                LogItemProperties = new List<LogItemProperty>() { new LogItemProperty("ServiceName", "JOB") },
+                LogItemProperties = new List<LogItemProperty>() { new LogItemProperty("ServiceName", ConstantHelper.JobLog) },
                 LogLevel = LogLevel.Info
             });
             //Debug.WriteLine("DummyJob > " + DateTime.Now);
@@ -81,7 +81,7 @@ namespace Quartz.Plugins
                         Title = "GenerateSendDataItemFrom Executed",
                         Message = "GenerateSendDataItemFrom Executed",
                         LogItemProperties = new List<LogItemProperty>() {
-                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                 new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
                                 new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
                             },
