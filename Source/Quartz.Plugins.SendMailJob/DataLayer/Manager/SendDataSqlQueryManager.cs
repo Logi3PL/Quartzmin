@@ -1,4 +1,5 @@
 ﻿using Quartz.Plugins.SendMailJob.DataLayer.Model;
+using Slf;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -50,7 +51,19 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Manager
             }
             catch (Exception ex)
             {
-                //TODO:Log                
+                LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                {
+                    LoggerName = ConstantHelper.JobLog,
+                    Title = "GetQueryData Error",
+                    Message = ex.Message,
+                    LogItemProperties = new List<LogItemProperty>() {
+                        new LogItemProperty("ServiceName", "JOB") ,
+                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                        new LogItemProperty("selectQuery", selectQuery)
+                    },
+                    LogLevel = LogLevel.Error,
+                    Exception = ex
+                });
             }
 
             return dataTable;
