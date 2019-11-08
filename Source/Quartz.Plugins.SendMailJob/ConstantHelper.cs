@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Text;
 
 namespace Quartz.Plugins.SendMailJob
@@ -13,7 +14,9 @@ namespace Quartz.Plugins.SendMailJob
         public static string GetConnectionString()
         {
             //TODO:Static
-            var conStr = "Data Source=127.0.0.1,1000;Integrated Security=True;Initial Catalog=QuartzNetJobDb;UID=sa;PWD=I@mJustT3st1ing;Integrated Security=False";
+            //var conStr = "Data Source=127.0.0.1,1000;Integrated Security=True;Initial Catalog=QUARTZNETJOBDB;UID=sa;PWD=I@mJustT3st1ing;Integrated Security=False";
+
+            var conStr = ConfigurationManager.ConnectionStrings["QUARTZNETJOBDB"]?.ConnectionString;
 
             return conStr;
         }

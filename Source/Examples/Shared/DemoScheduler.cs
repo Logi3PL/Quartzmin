@@ -2,9 +2,11 @@
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Quartz.Listener;
-using Quartz.Plugins;
+using Slf;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -15,6 +17,28 @@ namespace Quartzmin
     {
         public static async Task<IScheduler> Create(bool start = true)
         {
+            try
+            {
+                var conStr = ConfigurationManager.ConnectionStrings["QUARTZNETJOBDB"]?.ConnectionString;
+
+                LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
+                {
+                    LoggerName = "LOGIJMS",
+                    Title = "Scheduler Create",
+                    Message = "Scheduler Create",
+                    LogItemProperties = new List<LogItemProperty>() {
+                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                                new LogItemProperty("CONSTR", conStr),
+                            },
+                    LogLevel = LogLevel.Trace
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("--------------------------");
+            }
+
             NameValueCollection configuration = new NameValueCollection
             {
                  { "quartz.scheduler.instanceName", "LocalServer" },
@@ -23,7 +47,8 @@ namespace Quartzmin
                  //{ "quartz.jobStore.useProperties", "true" },
                  { "quartz.jobStore.dataSource", "default" },
                  { "quartz.jobStore.tablePrefix", "QRTZ_" },
-                 { "quartz.dataSource.default.connectionString", "Data Source=127.0.0.1,1000;Integrated Security=True;Initial Catalog=QuartzNetJobDb;UID=sa;PWD=I@mJustT3st1ing;Integrated Security=False" },
+                 //{ "quartz.dataSource.default.connectionString", "Data Source=127.0.0.1,1000;Integrated Security=True;Initial Catalog=QuartzNetJobDb;UID=sa;PWD=I@mJustT3st1ing;Integrated Security=False" },
+                 { "quartz.dataSource.default.connectionString",@"Data Source=192.168.5.43\LOGITEST,1434;Initial Catalog=QUARTZNETJOBDB;Persist Security Info=True;User ID=apiUser;Password=123456;MultipleActiveResultSets=True;Encrypt=False;Application Name=LOGIJOB" },
                  { "quartz.dataSource.default.provider", "SqlServer" },
                  //{ "quartz.threadPool.threadCount", "1" },
                  { "quartz.serializer.type", "binary" }
