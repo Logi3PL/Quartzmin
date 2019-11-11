@@ -14,7 +14,7 @@ namespace Quartzmin
         /// src='data:image/jpeg;base64, LzlqLzRBQ...[end of base64 data]'
         /// Defaults to the quartzmin original logo
         /// </summary>
-        public string Logo { get; set; } = "Content/Images/logo.png";
+        public string Logo { get; set; } = "Content/Images/logo2.png";
 
         public string ProductName { get; set; } = "";
 
