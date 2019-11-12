@@ -99,7 +99,7 @@ namespace Quartzmin.AspNet
                 app.UseQuartzmin(new QuartzminOptions()
                 {
                     Scheduler = scheduler,
-                    //VirtualPathRoot = "/test",
+                    VirtualPathRoot = "/test",
                     DefaultDateFormat = "dd.MM.yyyy"
                 });
             }

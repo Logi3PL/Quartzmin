@@ -8,12 +8,14 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace Quartzmin.TopshelfHost
 {
     public class QuartzSchedulerService
     {
         private readonly IScheduler scheduler;
+        readonly Timer _timer;
 
         public QuartzSchedulerService()
         {
@@ -43,6 +45,16 @@ namespace Quartzmin.TopshelfHost
 
                 StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
                 scheduler = factory.GetScheduler().GetAwaiter().GetResult();
+
+                _timer = new Timer(2000);
+                _timer.Elapsed += (sender,e)=> {
+                    if (scheduler.IsStarted == false)
+                    {
+                        this.StartScheduler();
+                    }
+                };         
+                
+
             }
             catch (System.Exception ex)
             {
@@ -63,6 +75,12 @@ namespace Quartzmin.TopshelfHost
         }
 
         public void Start()
+        {
+            _timer.Start();
+            StartScheduler();
+        }
+
+        private void StartScheduler()
         {
             scheduler.Start().ConfigureAwait(false).GetAwaiter().GetResult();
 
@@ -98,7 +116,7 @@ namespace Quartzmin.TopshelfHost
             }
         }
 
-        public void Stop()
+        private void StopScheduler()
         {
             scheduler.Shutdown().ConfigureAwait(false).GetAwaiter().GetResult();
             LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
@@ -113,6 +131,12 @@ namespace Quartzmin.TopshelfHost
                             },
                 LogLevel = LogLevel.Info
             });
+        }
+
+        public void Stop()
+        {
+            _timer.Stop();
+            this.StopScheduler();
         }
     }
 }

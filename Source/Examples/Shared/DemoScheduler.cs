@@ -77,8 +77,8 @@ namespace Quartzmin
             //    .Build();
             //await scheduler.ScheduleJob(jobb, triggerr);
 
-            if (start)
-                await scheduler.Start();
+            //if (start)
+            //    await scheduler.Start();
 
             return scheduler;
 

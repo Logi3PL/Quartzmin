@@ -61,6 +61,15 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Common.Logging, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.3.4.1\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.Core.3.4.1\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.NLog40, Version=3.4.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Common.Logging.NLog40.3.4.1\lib\net40\Common.Logging.NLog40.dll</HintPath>
+    </Reference>
     <Reference Include="Gelf4NLog.Target">
       <HintPath>..\Dependencies\Logs\Gelf4NLog.Target.dll</HintPath>
     </Reference>
@@ -126,6 +135,10 @@
     <ProjectReference Include="..\Quartz.Plugins.RecentHistory\Quartz.Plugins.RecentHistory.csproj">
       <Project>{43c177e2-88fb-47cd-abb3-4a229b969609}</Project>
       <Name>Quartz.Plugins.RecentHistory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Quartz.Plugins.SendMailJob\Quartz.Plugins.SendMailJob.csproj">
+      <Project>{06e70b09-2ff5-4d39-9e2b-f377498eaff0}</Project>
+      <Name>Quartz.Plugins.SendMailJob</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

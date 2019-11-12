@@ -83,6 +83,7 @@ namespace Quartz.Plugins
                         LogItemProperties = new List<LogItemProperty>() {
                                 new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                 new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                                new LogItemProperty("SendDataItem", sendDataItem),
                                 new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
                             },
                         LogLevel = LogLevel.Trace

@@ -122,6 +122,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                 LogItemProperties = new List<LogItemProperty>() {
                                     new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                     new LogItemProperty("ActionName", "InsertSendDataItem"),
+                                    new LogItemProperty("FormData", sendDataDetail),
                                     new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
                                 },
                                 Exception =new ArgumentException("Insert Failed !"),
@@ -229,7 +230,8 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         Message = "GetMailAccounts Not Found",
                         LogItemProperties = new List<LogItemProperty>() {
                                         new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
-                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom")
+                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel, SendDataItem = sendDataItem})
                                     },
                         LogLevel = LogLevel.Error,
                         Exception = new ArgumentException("GetMailAccounts Not Found")
@@ -544,6 +546,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                             new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                             new LogItemProperty("ActionName", "SendMailAction"),
                             new LogItemProperty("FormData", recipientList),
+                            new LogItemProperty("FormData", sendDataItem)
                         },
                         LogLevel = LogLevel.Error,
                         Exception = ex
