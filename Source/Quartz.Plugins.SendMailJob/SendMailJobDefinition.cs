@@ -28,17 +28,7 @@ namespace Quartz.Plugins
 
         public async Task Execute(IJobExecutionContext context)
         {
-            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
-            {
-                LoggerName = ConstantHelper.JobLog,
-                Title = "SendMailJobDefinition Started",
-                Message = "SendMailJobDefinition Started",
-                LogItemProperties = new List<LogItemProperty>() { new LogItemProperty("ServiceName", ConstantHelper.JobLog) },
-                LogLevel = LogLevel.Info
-            });
-            //Debug.WriteLine("DummyJob > " + DateTime.Now);
-
-            var schedulerName =context.Scheduler.SchedulerName;
+            var schedulerName = context.Scheduler.SchedulerName;
 
             var scheduleName = context.Scheduler.SchedulerName;
             var jobName = context.JobDetail.Key.Name;
@@ -46,6 +36,23 @@ namespace Quartz.Plugins
 
             var trgName = context.Trigger.Key.Name;
             var trgGroup = context.Trigger.Key.Group;
+
+            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+            {
+                LoggerName = ConstantHelper.JobLog,
+                Title = "SendMailJobDefinition Started",
+                Message = "SendMailJobDefinition Started",
+                LogItemProperties = new List<LogItemProperty>() {
+                    new LogItemProperty("ServiceName", ConstantHelper.JobLog),
+                    new LogItemProperty("ScheduleName", scheduleName),
+                    new LogItemProperty("JobName", jobName),
+                    new LogItemProperty("JobGroup", jobGroup),
+                    new LogItemProperty("TriggerName", trgName),
+                    new LogItemProperty("TriggerGroup", trgGroup)
+                },
+                LogLevel = LogLevel.Info
+            });
+            //Debug.WriteLine("DummyJob > " + DateTime.Now);
 
             var jobDataKeys = context.JobDetail.JobDataMap.GetKeys();
 
@@ -69,7 +76,26 @@ namespace Quartz.Plugins
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                await SendDataItemManager.GenerateSendDataItemFrom(customFormDataModel, sendDataItem);
+                try
+                {
+                    await SendDataItemManager.GenerateSendDataItemFrom(customFormDataModel, sendDataItem);
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                    {
+                        LoggerName = ConstantHelper.JobLog,
+                        Title = "GenerateSendDataItemFrom Execution Error",
+                        Message = ex.Message,
+                        LogItemProperties = new List<LogItemProperty>() {
+                                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
+                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel, SendDataItem = sendDataItem}),
+                                    },
+                        LogLevel = LogLevel.Error,
+                        Exception = ex
+                    });
+                }
 
                 stopwatch.Stop();
 

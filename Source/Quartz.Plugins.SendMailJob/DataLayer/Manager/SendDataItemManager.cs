@@ -545,7 +545,6 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         LogItemProperties = new List<LogItemProperty>() {
                             new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                             new LogItemProperty("ActionName", "SendMailAction"),
-                            new LogItemProperty("FormData", recipientList),
                             new LogItemProperty("FormData", sendDataItem)
                         },
                         LogLevel = LogLevel.Error,

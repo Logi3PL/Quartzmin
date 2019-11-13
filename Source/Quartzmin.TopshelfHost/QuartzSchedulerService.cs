@@ -1,5 +1,7 @@
 ﻿using Quartz;
 using Quartz.Impl;
+using Quartz.Impl.Matchers;
+using Quartz.Plugins.SendMailJob.DataLayer.Manager;
 using Slf;
 using System;
 using System.Collections.Generic;
@@ -46,11 +48,39 @@ namespace Quartzmin.TopshelfHost
                 StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
                 scheduler = factory.GetScheduler().GetAwaiter().GetResult();
 
-                _timer = new Timer(2000);
+                _timer = new Timer(10000);
                 _timer.Elapsed += (sender,e)=> {
                     if (scheduler.IsStarted == false)
                     {
                         this.StartScheduler();
+                    }
+
+                    var errorStateTriggers = TriggerManager.FindErrorStateTriggers();
+                    if (errorStateTriggers.Count>0)
+                    {
+                        foreach (var item in errorStateTriggers)
+                        {
+                            try
+                            {
+                                scheduler.ResumeTrigger(new TriggerKey(item.Key, item.Value));
+                            }
+                            catch (Exception trgErr)
+                            {
+                                LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
+                                {
+                                    LoggerName = "LOGIJMS",
+                                    Title = "Scheduler ResumeTrigger Error",
+                                    Message = trgErr.Message,
+                                    LogItemProperties = new List<LogItemProperty>() {
+                                        new LogItemProperty("ServiceName", "JOB") ,
+                                        new LogItemProperty("AppName", "LogiJMS.TopshelfHost") ,
+                                        new LogItemProperty("ActionName", "ResumeTrigger")
+                                    },
+                                    LogLevel = LogLevel.Error,
+                                    Exception = trgErr
+                                });
+                            }
+                        }
                     }
                 };         
                 
