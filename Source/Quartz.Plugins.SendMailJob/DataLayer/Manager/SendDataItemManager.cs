@@ -181,6 +181,8 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var sqlQueryConnectionString = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlQueryConnectionString);
                 var sqlqueryData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Sqlquery);
                 var sqlqueryToFieldData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlqueryToField);
+                var sqlqueryCcFieldData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlqueryCcField);
+                var sqlqueryBccFieldData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlqueryBccField);
                 var headerData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Header);
                 var footerData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Footer);
                 var detailSqlQueryConnectionString = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.DetailSqlQueryConnectionString);
@@ -214,8 +216,8 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 }
 
                 sendDataItem.Bcc = bccData.Value;
-
                 sendDataItem.Cc = ccData.Value;
+
                 sendDataItem.Type = 1; //TODO:Static - Email/Sms
 
                 var sendDataMailAccounts = await SendDataMailAccountManager.GetMailAccounts();
@@ -339,11 +341,20 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     toDataSource = await SendDataSqlQueryManager.GetQueryData(sqlQueryConnectionString.Value, sqlqueryData.Value);
                     if (toDataSource.Rows.Count > 0)
                     {
+                        var toFormField = sqlqueryToFieldData.Value?.Trim();
+                        var ccFormField = sqlqueryCcFieldData.Value?.Trim();
+                        var bccFormField = sqlqueryBccFieldData.Value?.Trim();
+
                         recipients = new List<string>();
 
                         var toDataSourceColumnNames = toDataSource.Columns.Cast<DataColumn>()
                                  .Select(x => x.ColumnName)
                                  .ToList();
+
+                        if (string.IsNullOrEmpty(toFormField) == false && toDataSourceColumnNames.Contains(toFormField) == false)
+                        {
+                            throw new ArgumentException("TO Field Select row'a ait değil !");
+                        }
 
                         Func<string, string, string, string> replaceStringFromToQuery = (sourceString, key, newData) =>
                          {
@@ -368,7 +379,29 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         {
                             try
                             {
-                                var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                var to = toDataSource.Rows[i][toFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                var ccField = "";
+                                var bccField = "";
+
+                                if (string.IsNullOrEmpty(ccFormField) == false)
+                                {
+                                    ccField = toDataSource.Rows[i][ccFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                }
+
+                                if (string.IsNullOrEmpty(bccFormField) == false)
+                                {
+                                    bccField = toDataSource.Rows[i][bccFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                }
+                                
+                                if (string.IsNullOrEmpty(sendDataItem.Cc) && string.IsNullOrEmpty(ccField) == false)
+                                {
+                                    sendDataItem.Cc = ccField;
+                                }
+
+                                if (string.IsNullOrEmpty(sendDataItem.Bcc) && string.IsNullOrEmpty(bccField) == false)
+                                {
+                                    sendDataItem.Bcc = bccField;
+                                }
 
                                 var headerContent = headerData.Value;
                                 var footerContent = footerData.Value;
@@ -422,6 +455,17 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                             }
                             catch (Exception exFor)
                             {
+                                var rowData = "";
+
+                                try
+                                {
+                                    rowData = JsonConvert.SerializeObject(toDataSource.Rows);
+                                }
+                                catch (Exception)
+                                {
+
+                                }
+
                                 LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
                                 {
                                     LoggerName = ConstantHelper.JobLog,
@@ -430,7 +474,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                     LogItemProperties = new List<LogItemProperty>() {
                                         new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                         new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
-                                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel, SendDataItem = sendDataItem}),
+                                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel, SendDataItem = sendDataItem,RowData = rowData,ToDataSourceColumnNames = toDataSourceColumnNames}),
                                     },
                                     LogLevel = LogLevel.Error,
                                     Exception = exFor

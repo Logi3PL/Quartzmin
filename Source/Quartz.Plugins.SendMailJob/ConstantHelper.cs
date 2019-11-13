@@ -29,6 +29,8 @@ namespace Quartz.Plugins.SendMailJob
             public const string Bcc = "bcc";
             public const string Sqlquery = "sqlquery";
             public const string SqlqueryToField = "sqlquerytofield";
+            public const string SqlqueryCcField = "sqlqueryccfield";
+            public const string SqlqueryBccField = "sqlquerybccfield";
             public const string SqlQueryConnectionString = "sqlqueryconstr";
             public const string Subject = "subject";
             public const string Header = "header";
