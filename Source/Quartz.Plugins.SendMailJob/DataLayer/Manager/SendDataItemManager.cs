@@ -553,7 +553,15 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                     foreach (var recipient in recipientList.Distinct())
                     {
-                        mail.To.Add(recipient);
+                        if (recipient.Contains(";"))
+                        {
+                            mail.To.Add(recipient.Replace(";", ",").Trim());
+                        }
+                        else
+                        {
+                            mail.To.Add(recipient.Trim());
+                        }
+                        
                     }
 
                     if (string.IsNullOrEmpty(sendDataItem.Cc) == false)
@@ -589,7 +597,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         LogItemProperties = new List<LogItemProperty>() {
                             new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                             new LogItemProperty("ActionName", "SendMailAction"),
-                            new LogItemProperty("FormData", sendDataItem)
+                            new LogItemProperty("FormData", new {sendDataItem,recipientList })
                         },
                         LogLevel = LogLevel.Error,
                         Exception = ex
