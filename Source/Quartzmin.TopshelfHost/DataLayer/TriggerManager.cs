@@ -13,40 +13,34 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Manager
 {
     public class TriggerManager
     {
-        public static List<KeyValuePair<string,string>> FindErrorStateTriggers()
+        public static List<KeyValuePair<string,string>> FindErrorStateTriggers(SqlConnection connection)
         {
             List<KeyValuePair<string, string>> returnVal = new List<KeyValuePair<string, string>>();
 
             try
             {
-                var conStr = ConfigurationManager.ConnectionStrings["QUARTZNETJOBDB"]?.ConnectionString;
+                var selectCommand = @"SELECT [TRIGGER_NAME],[TRIGGER_GROUP] FROM [QUARTZNETJOBDB].[dbo].[QRTZ_TRIGGERS] WHERE [TRIGGER_STATE] = 'ERROR'";
 
-                using (SqlConnection connection = new SqlConnection(conStr))
+                #region Execute Command
+                using (SqlCommand command = new SqlCommand(selectCommand, connection))
                 {
-                    connection.Open();
-                    var selectCommand = @"SELECT [TRIGGER_NAME],[TRIGGER_GROUP] FROM [QUARTZNETJOBDB].[dbo].[QRTZ_TRIGGERS] WHERE [TRIGGER_STATE] = 'ERROR'";
+                    var dataTable = new DataTable();
 
-                    #region Execute Command
-                    using (SqlCommand command = new SqlCommand(selectCommand, connection))
+                    SqlDataAdapter da = new SqlDataAdapter(command);
+                    // this will query your database and return the result to your datatable
+                    da.Fill(dataTable);
+
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
-                        var dataTable = new DataTable();
+                        var name = dataTable.Rows[i]["TRIGGER_NAME"].ToString();
+                        var group = dataTable.Rows[i]["TRIGGER_GROUP"].ToString();
 
-                        SqlDataAdapter da = new SqlDataAdapter(command);
-                        // this will query your database and return the result to your datatable
-                        da.Fill(dataTable);
-
-                        for (int i = 0; i < dataTable.Rows.Count; i++)
-                        {
-                            var name = dataTable.Rows[i]["TRIGGER_NAME"].ToString();
-                            var group = dataTable.Rows[i]["TRIGGER_GROUP"].ToString();
-
-                            returnVal.Add(new KeyValuePair<string, string>(name,group));
-                        }
+                        returnVal.Add(new KeyValuePair<string, string>(name, group));
                     }
-
-                    connection.Close();
-                    #endregion
                 }
+
+                connection.Close();
+                #endregion
 
             }
             catch (Exception ex)

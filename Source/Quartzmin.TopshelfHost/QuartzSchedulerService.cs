@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,40 +49,64 @@ namespace Quartzmin.TopshelfHost
                 StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
                 scheduler = factory.GetScheduler().GetAwaiter().GetResult();
 
-                _timer = new Timer(10000);
+                _timer = new Timer(30000);
                 _timer.Elapsed += (sender,e)=> {
                     if (scheduler.IsStarted == false)
                     {
                         this.StartScheduler();
                     }
 
-                    var errorStateTriggers = TriggerManager.FindErrorStateTriggers();
-                    if (errorStateTriggers.Count>0)
+                    #region FindErrorStateTriggers
+                    using (SqlConnection connection = new SqlConnection(conStr))
                     {
-                        foreach (var item in errorStateTriggers)
+                        var connectionOk = false;
+                        try
                         {
-                            try
+                            connection.Open();
+
+                            if (connection.State == System.Data.ConnectionState.Open)
                             {
-                                scheduler.ResumeTrigger(new TriggerKey(item.Key, item.Value));
+                                connectionOk = true;
                             }
-                            catch (Exception trgErr)
+                        }
+                        catch (Exception sqlCon)
+                        {
+                            this.StopScheduler();
+                        }
+
+                        if (connectionOk)
+                        {
+                            var errorStateTriggers = TriggerManager.FindErrorStateTriggers(connection);
+                            if (errorStateTriggers.Count > 0)
                             {
-                                LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
+                                foreach (var item in errorStateTriggers)
                                 {
-                                    LoggerName = "LOGIJMS",
-                                    Title = "Scheduler ResumeTrigger Error",
-                                    Message = trgErr.Message,
-                                    LogItemProperties = new List<LogItemProperty>() {
+                                    try
+                                    {
+                                        scheduler.ResumeTrigger(new TriggerKey(item.Key, item.Value));
+                                    }
+                                    catch (Exception trgErr)
+                                    {
+                                        LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
+                                        {
+                                            LoggerName = "LOGIJMS",
+                                            Title = "Scheduler ResumeTrigger Error",
+                                            Message = trgErr.Message,
+                                            LogItemProperties = new List<LogItemProperty>() {
                                         new LogItemProperty("ServiceName", "JOB") ,
                                         new LogItemProperty("AppName", "LogiJMS.TopshelfHost") ,
                                         new LogItemProperty("ActionName", "ResumeTrigger")
                                     },
-                                    LogLevel = LogLevel.Error,
-                                    Exception = trgErr
-                                });
+                                            LogLevel = LogLevel.Error,
+                                            Exception = trgErr
+                                        });
+                                    }
+                                }
                             }
                         }
-                    }
+
+                    } 
+                    #endregion
                 };         
                 
 
