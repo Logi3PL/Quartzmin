@@ -74,12 +74,28 @@
             </div>
         </div>
         {{/with}}
-        <div id="subJobContainer">
+
+        {{#if Model.Job.IsNew}}{{else}}
+
+        {{#contains Model.Job.JobName "SendMail"}}
+
+        <div id="sendDataJobFormContainer">
             {{>SendData/SendDataJobForm Model}}
         </div>
-        <h3 class="ui dividing header">Job Data Map</h3>
 
-        {{>JobDataMap Model.DataMap}}
+        {{/contains}}
+
+
+        {{#contains Model.Job.JobName "WebApiCall"}}
+
+        <div id="webApiCallJobFormContainer">
+            {{>WebApiCall/WebApiCallJobForm Model}}
+        </div>
+
+        {{/contains}}
+
+        {{/if}}
+
     </div>
 </form>
 
@@ -105,18 +121,33 @@
 
         if ($jobType.indexOf('SendMailJob') > -1) {
 
-            $('#subJobContainer').show();
+            $('#sendDataJobFormContainer').show();
         } else {
-            $('#subJobContainer').hide();
+            $('#sendDataJobFormContainer').hide();
+        }
+
+        //Edit asamasında formu goster
+        if ($jobType.indexOf('WebApiCall') > -1) {
+
+            $('#webApiCallJobFormContainer').show();
+        } else {
+            $('#webApiCallJobFormContainer').hide();
         }
 
         $('#jobTypeDropdown').on('change', function () {
 
             if (this.value.indexOf('SendMailJob') > -1) {
 
-                $('#subJobContainer').show();
+                $('#sendDataJobFormContainer').show();
             } else {
-                $('#subJobContainer').hide();
+                $('#sendDataJobFormContainer').hide();
+            }
+
+            if (this.value.indexOf('WebApiCall') > -1) {
+
+                $('#webApiCallJobFormContainer').show();
+            } else {
+                $('#webApiCallJobFormContainer').hide();
             }
         });
 

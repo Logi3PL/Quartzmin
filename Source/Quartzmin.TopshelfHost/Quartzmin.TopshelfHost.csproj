@@ -141,6 +141,10 @@
       <Project>{06e70b09-2ff5-4d39-9e2b-f377498eaff0}</Project>
       <Name>Quartz.Plugins.SendMailJob</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Quartz.Plugins.WebApiCallJob\Quartz.Plugins.WebApiCallJob.csproj">
+      <Project>{1b8602a9-8a42-4713-8393-4eccbe4b1eda}</Project>
+      <Name>Quartz.Plugins.WebApiCallJob</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">

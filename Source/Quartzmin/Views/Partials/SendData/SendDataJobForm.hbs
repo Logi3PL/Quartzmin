@@ -1,4 +1,4 @@
-﻿<div id="subJobContainerWizard">
+﻿<div id="sendDataJobFormContainerWizard">
     <h3>Send Data</h3>
     <section>
         <label for="sendDataTo">To</label>
@@ -116,12 +116,16 @@
 
         }
 
-        $("#subJobContainerWizard").steps({
+        $("#sendDataJobFormContainerWizard").steps({
             headerTag: "h3",
             bodyTag: "section",
             transitionEffect: "slideLeft",
             autoFocus: true,
-            enableFinishButton: false
+            enableFinishButton: false,
+            labels: {
+                next: 'Sonraki <i class="fa fa-chevron-right"></i>',
+                previous: '<i class="fa fa-chevron-left"></i> Önceki'
+            }
         });
 
         try {

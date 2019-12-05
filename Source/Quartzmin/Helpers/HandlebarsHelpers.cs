@@ -77,6 +77,26 @@ namespace Quartzmin.Helpers
                 }
             });
 
+            h.RegisterHelper("contains", (writer, options, context, arguments) =>
+            {
+                if (arguments.Length != 2)
+                {
+                    throw new HandlebarsException("Contains helper must have exactly two argument");
+                }
+
+                var sourceData = arguments[0].ToString();
+                var searchData = arguments[1].ToString();
+
+                if (sourceData.Contains(searchData))
+                {
+                    options.Template(writer, (object)context);
+                }
+                else
+                {
+                    options.Inverse(writer, (object)context);
+                }
+            });
+
             h.RegisterHelper("Upper", (o, c, a) => o.Write(a[0].ToString().ToUpper()));
             h.RegisterHelper("Lower", (o, c, a) => o.Write(a[0].ToString().ToLower()));
             h.RegisterHelper("LocalTimeZoneInfoId", (o, c, a) => o.Write(TimeZoneInfo.Local.Id));

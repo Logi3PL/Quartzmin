@@ -1,0 +1,104 @@
+﻿<div id="webApiCallJobFormContainerWizard">
+    <h3>Web Api Call</h3>
+    <section>
+        <label for="webApiCallUrl">Url</label>
+        <input type="hidden" name="job.CustomFormData[0].Key" value="webapicallurl" />
+        <input type="text" name="job.CustomFormData[0].Value" value="{{{GetItemProp CustomFormData 0 'Value'}}}" id="webApiCallUrl" />
+        <span></span>
+        <label for="webApiCallHttpMethod">Http Method</label>
+        <input type="hidden" name="job.CustomFormData[1].Key" value="httpmethod" />
+        <select class="ui fluid dropdown allow-empty" name="job.CustomFormData[1].Value" id="httpmethod">
+            <option value="">--- Not Set ---</option>
+            <option value="get">Get</option>
+            <option value="post">Post</option>
+            <option value="put">Put</option>
+            <option value="delete">Delete</option>
+        </select>
+        <span></span>
+        <label for="webApiCallHttpMethodPrmTyp">Parameter Send Type</label>
+        <input type="hidden" name="job.CustomFormData[2].Key" value="webapicallhttpmethodprmtyp" />
+        <select class="ui fluid dropdown allow-empty" name="job.CustomFormData[2].Value" id="webapicallhttpmethodprmtyp">
+            <option value="">--- Not Set ---</option>
+            <option value="url">Url</option>
+            <option value="body">Body</option>
+        </select>
+        <span></span>
+        <label for="webApiCallHttpMethodCntTyp">Content Type</label>
+        <input type="hidden" name="job.CustomFormData[3].Key" value="webapicallhttpmethodcnttyp" />
+        <select class="ui fluid dropdown allow-empty" name="job.CustomFormData[3].Value" id="webApiCallHttpMethodCntTyp">
+            <option value="">--- Not Set ---</option>
+            <option value="application/json">JSON</option>
+            <option value="text/plain">Text</option>
+            <option value="text/html">Html</option>
+        </select>
+        <span></span>
+        <label for="webApiCallHttpMethodParam">Parameters</label>
+        <input type="hidden" name="job.CustomFormData[4].Key" value="webapicallhttpmethodprm" />
+        <textarea id="webApiCallHttpMethodParam" name="job.CustomFormData[4].Value" cols="40" rows="5" style="resize: none;"></textarea>
+        <span></span>
+        <label for="webapicallhttpmethodhdr">Headers</label>
+        <input type="hidden" name="job.CustomFormData[5].Key" value="webapicallhttpmethodhdr" />
+        <textarea id="webApiCallHttpMethodHeader" name="job.CustomFormData[5].Value" cols="40" rows="5" style="resize: none;"></textarea>
+    </section>
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+        
+        $("#webApiCallJobFormContainerWizard").steps({
+            headerTag: "h3",
+            bodyTag: "section",
+            transitionEffect: "slideLeft",
+            autoFocus: true,
+            enableFinishButton: false,
+            titleTemplate: '#title#',
+            onInit: function (event, current) {
+                $('.actions > ul > li:first-child').attr('style', 'display:none');
+            }
+        });
+
+        //BEGIN - OPTIONS Selections
+        var httpmethodData = "{{{GetItemProp CustomFormData 1 'Value'}}}";
+
+        if (httpmethodData) {
+
+            $('#httpmethod').val(httpmethodData);
+        }
+
+        var webApiCallHttpMethodCntTypData = "{{{GetItemProp CustomFormData 3 'Value'}}}";
+
+        if (webApiCallHttpMethodCntTypData) {
+
+            $('#webApiCallHttpMethodCntTyp').val(webApiCallHttpMethodCntTypData);
+        }
+
+        var webapicallhttpmethodprmtypData = "{{{GetItemProp CustomFormData 2 'Value'}}}";
+
+        if (webapicallhttpmethodprmtypData) {
+
+            $('#webapicallhttpmethodprmtyp').val(webapicallhttpmethodprmtypData);
+        }
+        //END - OPTIONS Selections
+
+        try {
+
+            $('#webApiCallHttpMethodHeader').html(`{{{GetItemProp CustomFormData 5 'Value'}}}`);
+            //demo();
+        } catch (e) {
+            console.log("demo(); problem");
+        }
+
+        try {
+
+            $('#webApiCallHttpMethodParam').html(`{{{GetItemProp CustomFormData 4 'Value'}}}`);
+            //demo();
+        } catch (e) {
+            console.log("demo(); problem");
+        }
+
+
+    })
+</script>
+<script src="Content/Scripts/jquery.steps.min.js"></script>
+<link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />

@@ -160,6 +160,7 @@
   <ItemGroup>
     <None Remove="Content\jquery.steps.css" />
     <None Remove="Views\Partials\SendData\SendDataJobForm.hbs" />
+    <None Remove="Views\Partials\WebApiCall\WebApiCallJobForm.hbs" />
   </ItemGroup>
 
 </Project>

@@ -51,62 +51,81 @@ namespace Quartzmin.TopshelfHost
 
                 _timer = new Timer(30000);
                 _timer.Elapsed += (sender,e)=> {
-                    if (scheduler.IsStarted == false)
+                    try
                     {
-                        this.StartScheduler();
-                    }
-
-                    #region FindErrorStateTriggers
-                    using (SqlConnection connection = new SqlConnection(conStr))
-                    {
-                        var connectionOk = false;
-                        try
+                        if (scheduler.IsStarted == false)
                         {
-                            connection.Open();
-
-                            if (connection.State == System.Data.ConnectionState.Open)
-                            {
-                                connectionOk = true;
-                            }
-                        }
-                        catch (Exception sqlCon)
-                        {
-                            this.StopScheduler();
+                            this.StartScheduler();
                         }
 
-                        if (connectionOk)
+                        #region FindErrorStateTriggers
+                        using (SqlConnection connection = new SqlConnection(conStr))
                         {
-                            var errorStateTriggers = TriggerManager.FindErrorStateTriggers(connection);
-                            if (errorStateTriggers.Count > 0)
+                            var connectionOk = false;
+                            try
                             {
-                                foreach (var item in errorStateTriggers)
+                                connection.Open();
+
+                                if (connection.State == System.Data.ConnectionState.Open)
                                 {
-                                    try
+                                    connectionOk = true;
+                                }
+                            }
+                            catch (Exception sqlCon)
+                            {
+                                this.StopScheduler();
+                            }
+
+                            if (connectionOk)
+                            {
+                                var errorStateTriggers = TriggerManager.FindErrorStateTriggers(connection);
+                                if (errorStateTriggers.Count > 0)
+                                {
+                                    foreach (var item in errorStateTriggers)
                                     {
-                                        scheduler.ResumeTrigger(new TriggerKey(item.Key, item.Value));
-                                    }
-                                    catch (Exception trgErr)
-                                    {
-                                        LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
+                                        try
                                         {
-                                            LoggerName = "LOGIJMS",
-                                            Title = "Scheduler ResumeTrigger Error",
-                                            Message = trgErr.Message,
-                                            LogItemProperties = new List<LogItemProperty>() {
+                                            scheduler.ResumeTrigger(new TriggerKey(item.Key, item.Value));
+                                        }
+                                        catch (Exception trgErr)
+                                        {
+                                            LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
+                                            {
+                                                LoggerName = "LOGIJMS",
+                                                Title = "Scheduler ResumeTrigger Error",
+                                                Message = trgErr.Message,
+                                                LogItemProperties = new List<LogItemProperty>() {
                                         new LogItemProperty("ServiceName", "JOB") ,
                                         new LogItemProperty("AppName", "LogiJMS.TopshelfHost") ,
                                         new LogItemProperty("ActionName", "ResumeTrigger")
                                     },
-                                            LogLevel = LogLevel.Error,
-                                            Exception = trgErr
-                                        });
+                                                LogLevel = LogLevel.Error,
+                                                Exception = trgErr
+                                            });
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                    } 
-                    #endregion
+                        }
+                        #endregion
+                    }
+                    catch (Exception expTmr)
+                    {
+                        LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
+                        {
+                            LoggerName = "LOGIJMS",
+                            Title = "Timer Exception",
+                            Message = expTmr.Message,
+                            LogItemProperties = new List<LogItemProperty>() {
+                                new LogItemProperty("ServiceName", "JOB") ,
+                                new LogItemProperty("AppName", "LogiJMS.TopshelfHost") ,
+                                new LogItemProperty("ActionName", "Timer")
+                            },
+                            LogLevel = LogLevel.Error,
+                            Exception = expTmr
+                        });
+                    }
                 };         
                 
 
