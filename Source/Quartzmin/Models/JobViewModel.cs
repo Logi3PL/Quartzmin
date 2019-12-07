@@ -40,7 +40,7 @@ namespace Quartzmin.Models
 
         public string Description { get; set; }
 
-        public List<CustomDataModel> CustomFormData { get; set; }
+        public string CustomFormDataJsonModel { get; set; }
 
         public bool Recovery { get; set; }
 

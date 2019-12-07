@@ -78,7 +78,7 @@ WHERE SENTDATE is not null AND STATUS IN (0,2) AND ACTIVE = 1
             }
         }
 
-        public static async Task<int> InsertSendDataDetail(SqlConnection connection,SqlTransaction transaction,SendDataDetail sendDataDetail)
+        public static async Task<int> InsertSendDataDetail(SqlConnection connection,SqlTransaction transaction, SendDataDetail sendDataDetail)
         {
             try
             {

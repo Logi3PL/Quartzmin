@@ -2,58 +2,42 @@
     <h3>Send Data</h3>
     <section>
         <label for="sendDataTo">To</label>
-        <input type="hidden" name="job.CustomFormData[0].Key" value="to" />
-        <input type="text" name="job.CustomFormData[0].Value" value="{{{GetItemProp CustomFormData 0 'Value'}}}" id="sendDataTo" />
+        <input type="text" id="sendDataTo" />
         <label for="sendDataCc">Cc</label>
-        <input type="hidden" name="job.CustomFormData[1].Key" value="cc" />
-        <input type="text" name="job.CustomFormData[1].Value" value="{{{GetItemProp CustomFormData 1 'Value'}}}" id="sendDataCc" />
+        <input type="text" id="sendDataCc" />
         <label for="sendDataBcc">Bcc</label>
-        <input type="hidden" name="job.CustomFormData[2].Key" value="bcc" />
-        <input type="text" name="job.CustomFormData[2].Value" value="{{{GetItemProp CustomFormData 2 'Value'}}}" id="sendDataBcc" />
+        <input type="text" id="sendDataBcc" />
         <label for="sendDataSqlQuery">Sql Query</label>
-        <input type="hidden" name="job.CustomFormData[3].Key" value="sqlquery" />
-        <input type="text" name="job.CustomFormData[3].Value" value="{{{GetItemProp CustomFormData 3 'Value'}}}" id="sendDataSqlQuery" />
+        <input type="text" id="sendDataSqlQuery" />
         <label for="sendDataSqlQuery">Sql Query To Field</label>
-        <input type="hidden" name="job.CustomFormData[11].Key" value="sqlquerytofield" />
-        <input type="text" name="job.CustomFormData[11].Value" value="{{{GetItemProp CustomFormData 11 'Value'}}}" id="sendDataSqlQueryToField" />
+        <input type="text" id="sendDataSqlQueryToField" />
         <label for="sendDataSqlQuery">Sql Query Cc Field</label>
-        <input type="hidden" name="job.CustomFormData[14].Key" value="sqlqueryccfield" />
-        <input type="text" name="job.CustomFormData[14].Value" value="{{{GetItemProp CustomFormData 14 'Value'}}}" id="sendDataSqlQueryCcField" />
+        <input type="text" id="sendDataSqlQueryCcField" />
         <label for="sendDataSqlQuery">Sql Query Bcc Field</label>
-        <input type="hidden" name="job.CustomFormData[15].Key" value="sqlquerybccfield" />
-        <input type="text" name="job.CustomFormData[15].Value" value="{{{GetItemProp CustomFormData 15 'Value'}}}" id="sendDataSqlQueryBccField" />
+        <input type="text" id="sendDataSqlQueryBccField" />
         <label for="sendDataSqlQueryConStr">Sql Query Connection String</label>
-        <input type="hidden" name="job.CustomFormData[4].Key" value="sqlqueryconstr" />
-        <input type="text" name="job.CustomFormData[4].Value" value="{{{GetItemProp CustomFormData 4 'Value'}}}" id="sendDataSqlQueryConStr" />
+        <input type="text" id="sendDataSqlQueryConStr" />
         <p></p>
         <label for="useSendDataDetailBodyForAll">Herkes icin ayrı ayrı gönder</label>
-        <input type="hidden" name="job.CustomFormData[13].Key" value="usedetailforeveryone" />
-        <input type="checkbox" name="job.CustomFormData[13].Value" id="useSendDataDetailBodyForAll" />
+        <input type="checkbox" id="useSendDataDetailBodyForAll" />
     </section>
     <h3>Send Data Detail</h3>
     <section>
         <label for="sendDataDetailSubject">Konu</label>
-        <input type="hidden" name="job.CustomFormData[5].Key" value="subject" />
-        <input id="sendDataDetailSubject" name="job.CustomFormData[5].Value" value="{{{GetItemProp CustomFormData 5 'Value'}}}" type="text">
+        <input id="sendDataDetailSubject" type="text">
         <label for="sendDataDetailHeader">Başlık</label>
-        <input type="hidden" name="job.CustomFormData[6].Key" value="header" />
-        <input id="sendDataDetailHeader" name="job.CustomFormData[6].Value" value="{{{GetItemProp CustomFormData 6 'Value'}}}" type="text">
+        <input id="sendDataDetailHeader" type="text">
         <label for="sendDataDetailContent">İçerik</label>
-        <input type="hidden" name="job.CustomFormData[7].Key" value="body" />
-        <textarea id="sendDataDetailContent" name="job.CustomFormData[7].Value" cols="40" rows="5" style="resize: none;"></textarea>
+        <textarea id="sendDataDetailContent" cols="40" rows="5" style="resize: none;"></textarea>
         <label for="sendDataDetailFooter">Alt Bilgi</label>
-        <input type="hidden" name="job.CustomFormData[8].Key" value="footer" />
-        <input id="sendDataDetailFooter" name="job.CustomFormData[8].Value" value="{{{GetItemProp CustomFormData 8 'Value'}}}" type="text">
+        <input id="sendDataDetailFooter" type="text">
         <label for="sendDataDetailSqlQuery">Detail Sql Query</label>
-        <input type="hidden" name="job.CustomFormData[9].Key" value="detailsqlquery" />
-        <input type="text" name="job.CustomFormData[9].Value" value="{{{GetItemProp CustomFormData 9 'Value'}}}" id="sendDataDetailSqlQuery" />
+        <input type="text" id="sendDataDetailSqlQuery" />
         <label for="sendDataDetailSqlQueryConStr">Detail Sql Query Connection String</label>
-        <input type="hidden" name="job.CustomFormData[10].Key" value="detailsqlqueryconstr" />
-        <input type="text" name="job.CustomFormData[10].Value" value="{{{GetItemProp CustomFormData 10 'Value'}}}" id="sendDataDetailSqlQueryConStr" />
+        <input type="text" id="sendDataDetailSqlQueryConStr" />
         <p></p>
         <label for="useSendDataDetailQueryForTemplate">Detay sorgu mail içeriğinde kullan</label>
-        <input type="hidden" name="job.CustomFormData[12].Key" value="usesenddatadetailqueryfortemplate" />
-        <input type="checkbox" name="job.CustomFormData[12].Value" id="useSendDataDetailQueryForTemplate" />
+        <input type="checkbox" id="useSendDataDetailQueryForTemplate" />
     </section>
 </div>
 
@@ -92,51 +76,84 @@
     }
 
     $(function () {
-        
-        var usedetailforeveryoneData = "{{{GetItemProp CustomFormData 13 'Value'}}}";
-
-        if (usedetailforeveryoneData === "on") {
-
-            $('#useSendDataDetailBodyForAll').attr("checked", true);
-
-        } else {
-
-            $('#useSendDataDetailBodyForAll').attr("checked", false);
-
-        }
-
-        var useSendDataDetailQueryForTemplate = "{{{GetItemProp CustomFormData 12 'Value'}}}";
-        if (useSendDataDetailQueryForTemplate === "on") {
-
-            $('#useSendDataDetailQueryForTemplate').attr("checked", true);
-
-        } else {
-
-            $('#useSendDataDetailQueryForTemplate').attr("checked", false);
-
-        }
 
         $("#sendDataJobFormContainerWizard").steps({
             headerTag: "h3",
             bodyTag: "section",
             transitionEffect: "slideLeft",
             autoFocus: true,
-            enableFinishButton: false,
-            labels: {
-                next: 'Sonraki <i class="fa fa-chevron-right"></i>',
-                previous: '<i class="fa fa-chevron-left"></i> Önceki'
-            }
+            enableFinishButton: false
         });
 
-        try {
-            debugger;
-
-            $('#sendDataDetailContent').html(`{{{GetItemProp CustomFormData 7 'Value'}}}`);
-            //demo();
-        } catch (e) {
-            console.log("demo(); problem");
-        }
     })
+
+    function SetDataForSendDataJob(model) {
+        if (model == undefined || model == null) {
+            return;
+        }
+
+        $("#sendDataTo").val(model.To);
+        $("#sendDataCc").val(model.Cc);
+        $("#sendDataBcc").val(model.Bcc);
+        $("#sendDataSqlQuery").val(model.SqlQuery);
+        $("#sendDataSqlQueryToField").val(model.SqlQueryToField);
+        $("#sendDataSqlQueryCcField").val(model.SqlQueryCcField);
+        $("#sendDataSqlQueryBccField").val(model.SqlQueryBccField);
+        $("#sendDataSqlQueryConStr").val(model.SqlQueryConStr);
+        $("#sendDataDetailSubject").val(model.DetailSubject);
+        $("#sendDataDetailHeader").val(model.DetailHeader);
+        $("#sendDataDetailContent").val(model.DetailContent);
+        $("#sendDataDetailFooter").val(model.DetailFooter);
+        $("#sendDataDetailSqlQuery").val(model.DetailSqlQuery);
+        $("#sendDataDetailSqlQueryConStr").val(model.DetailSqlQueryConStr);
+
+        if (model.DetailBodyForAll) {
+
+            $('#useSendDataDetailBodyForAll').prop("checked", true);
+
+        } else {
+
+            $('#useSendDataDetailBodyForAll').prop("checked", false);
+
+        }
+
+        if (model.DetailQueryForTemplate) {
+
+            $('#useSendDataDetailQueryForTemplate').prop("checked", true);
+
+        } else {
+
+            $('#useSendDataDetailQueryForTemplate').prop("checked", false);
+
+        }
+
+    }
+
+    function GetDataForSendDataJob() {
+        var to = $("#sendDataTo").val();
+        var cc = $("#sendDataCc").val();
+        var bcc = $("#sendDataBcc").val();
+        var sqlQuery = $("#sendDataSqlQuery").val();
+        var sqlQueryToField = $("#sendDataSqlQueryToField").val();
+        var sqlQueryCcField = $("#sendDataSqlQueryCcField").val();
+        var sqlQueryBccField = $("#sendDataSqlQueryBccField").val();
+        var sqlQueryConStr = $("#sendDataSqlQueryConStr").val();
+        var detailBodyForAll = $("#useSendDataDetailBodyForAll").prop("checked");
+        var detailSubject = $("#sendDataDetailSubject").val();
+        var detailHeader = $("#sendDataDetailHeader").val();
+        var detailContent = $("#sendDataDetailContent").val();
+        var detailFooter = $("#sendDataDetailFooter").val();
+        var detailSqlQuery = $("#sendDataDetailSqlQuery").val();
+        var detailSqlQueryConStr = $("#sendDataDetailSqlQueryConStr").val();
+        var detailQueryForTemplate = $("#useSendDataDetailQueryForTemplate").prop("checked");
+
+        return {
+            To: to, Cc: cc, Bcc: bcc, SqlQuery: sqlQuery, SqlQueryToField: sqlQueryToField, SqlQueryCcField: sqlQueryCcField, SqlQueryBccField: sqlQueryBccField, SqlQueryConStr: sqlQueryConStr,
+            DetailBodyForAll: detailBodyForAll, DetailSubject: detailSubject, DetailHeader: detailHeader, DetailContent: detailContent, DetailFooter: detailFooter,
+            DetailSqlQuery: detailSqlQuery, DetailSqlQueryConStr: detailSqlQueryConStr, DetailQueryForTemplate: detailQueryForTemplate
+        };
+    }
+
 </script>
 <script src="Content/Scripts/jquery.steps.min.js"></script>
 <script src="Content/Scripts/lib/webintellisense.js"></script>

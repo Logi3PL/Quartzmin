@@ -137,15 +137,14 @@ namespace Quartzmin.Controllers
             var customData = jobData.Where(x => x.Name == "CustomData").FirstOrDefault();
             if (customData!=null)
             {
-                var customFormDataModel = JsonConvert.DeserializeObject<List<CustomDataModel>>(customData.Value.ToString());
-                jobModel.CustomFormData = customFormDataModel;
+                jobModel.CustomFormDataJsonModel = customData.Value.ToString();
 
                 //jobData.Remove(customData);
             }
 
             jobDataMap.Items.AddRange(jobData);
 
-            return View("Edit", new { Job = jobModel, CustomFormData=jobModel.CustomFormData.Select(s=> new {s.Key,s.Value }).ToArray(), DataMap = jobDataMap });
+            return View("Edit", new { Job = jobModel, DataMap = jobDataMap });
         }
 
         private async Task<IJobDetail> GetJobDetail(JobKey key)
@@ -173,7 +172,7 @@ namespace Quartzmin.Controllers
             {
                 var jobData = jobDataMap.GetQuartzJobDataMap();
 
-                if (model?.Job?.CustomFormData?.Count>0)
+                if (model?.Job?.CustomFormDataJsonModel?.Length>0)
                 {
                     if (jobData == null)
                     {
@@ -183,8 +182,7 @@ namespace Quartzmin.Controllers
                     {
                         jobData.Remove("CustomData");
                     }
-                    var customFormData = JsonConvert.SerializeObject(model.Job.CustomFormData);
-                    jobData.Add("CustomData", customFormData);
+                    jobData.Add("CustomData", model.Job.CustomFormDataJsonModel);
                 }
 
                 IJobDetail BuildJob(JobBuilder builder)

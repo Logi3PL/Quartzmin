@@ -42,12 +42,12 @@ namespace Quartz.Plugins
             var trgGroup = context.Trigger.Key.Group;
 
             var jobDataKeys = context.JobDetail.JobDataMap.GetKeys();
-            var customFormDataModel = new List<CustomDataModel>();
+            var customFormDataModel = new WebApiCallViewModel();
 
             if (jobDataKeys.Contains(ConstantHelper.CustomData))
             {
                 var customFormData = context.JobDetail.JobDataMap.GetString(ConstantHelper.CustomData);
-                customFormDataModel = JsonConvert.DeserializeObject<List<CustomDataModel>>(customFormData);
+                customFormDataModel = JsonConvert.DeserializeObject<WebApiCallViewModel>(customFormData);
             }
 
             LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
@@ -67,7 +67,7 @@ namespace Quartz.Plugins
             });
             //Debug.WriteLine("DummyJob > " + DateTime.Now);
 
-            if (customFormDataModel.Count>0)
+            if (customFormDataModel!=null)
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -75,30 +75,31 @@ namespace Quartz.Plugins
                 try
                 {
                     #region Get CustomFormDataModel Props
-                    var httpMethodData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.HttpMethod);
-                    var httpMethodHeader = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.HttpMethodHeader);
-                    var httpMethodParameters = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.HttpMethodParameters);
-                    var httpMethodParameterType = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.HttpMethodParameterType);
-                    var urlData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Url);
-                    var mediaTypeData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.MediaType);
+                    var httpMethodData = customFormDataModel.HttpMethod;
+                    var httpMethodHeader = customFormDataModel.HttpMethodHeader;
+                    var httpMethodParameters = customFormDataModel.HttpMethodParameter;
+                    var httpMethodParameterType = customFormDataModel.HttpMethodParamType;
+                    var urlData = customFormDataModel.WebApiCallUrl;
+                    var mediaTypeData = customFormDataModel.HttpMethodContentType;
                     #endregion
 
                     #region Send Call
                     
-                    var headers = httpMethodHeader.Value.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => 
+                    var headers = httpMethodHeader.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => 
                     {
                         var firstIndexOfSplitter = x.IndexOf(':');
                         var headerKey = x.Substring(0, firstIndexOfSplitter);
-                        var headerValue = x.Replace(headerKey, "");
-                        return new { Key = headerKey, Value = headerValue };
+
+                        var headerValue = x.Replace(headerKey+":", "");
+                        return new { Key = headerKey.Trim(), Value = headerValue.Trim() };
 
                         //var splittedHeaderItem = x.Split(new[] { ":" }, StringSplitOptions.RemoveEmptyEntries).ToArray();
                         //return new { Key = splittedHeaderItem[0], Value = splittedHeaderItem[1] };
 
                     }).ToList();
 
-                    var url = urlData.Value;
-                    var httpMethod = httpMethodData.Value;
+                    var url = urlData;
+                    var httpMethod = httpMethodData;
                     
                     using (HttpClient client = new System.Net.Http.HttpClient())
                     {
@@ -133,9 +134,9 @@ namespace Quartz.Plugins
 
                         HttpRequestMessage request = new HttpRequestMessage(httpMethodParam, builder.Uri);
 
-                        if (string.IsNullOrEmpty(httpMethodParameters.Value.Trim()) == false)
+                        if (string.IsNullOrEmpty(httpMethodParameters.Trim()) == false)
                         {
-                            var content = new StringContent(httpMethodParameters.Value.Trim(), Encoding.UTF8, mediaTypeData.Value);
+                            var content = new StringContent(httpMethodParameters.Trim(), Encoding.UTF8, mediaTypeData);
                             request.Content = content;//CONTENT-TYPE header
                         }
 

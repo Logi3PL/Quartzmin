@@ -170,31 +170,30 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
             }
         }
 
-        public static async Task<bool> GenerateSendDataItemFrom(List<CustomDataModel> customFormDataModel, SendDataItem sendDataItem)
+        public static async Task<bool> GenerateSendDataItemFrom(SendDataViewModel customFormDataModel, SendDataItem sendDataItem)
         {
             try
             {
                 #region Get CustomFormDataModel Props
-                var sendDataId = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Id);
-                var toData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.To);
-                var subjectData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Subject);
-                var sqlQueryConnectionString = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlQueryConnectionString);
-                var sqlqueryData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Sqlquery);
-                var sqlqueryToFieldData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlqueryToField);
-                var sqlqueryCcFieldData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlqueryCcField);
-                var sqlqueryBccFieldData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.SqlqueryBccField);
-                var headerData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Header);
-                var footerData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Footer);
-                var detailSqlQueryConnectionString = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.DetailSqlQueryConnectionString);
-                var detailSqlqueryData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.DetailSqlquery);
-                var useSendDataDetailQueryForTemplateData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.UseSendDataDetailQueryForTemplate);
-                var ccData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Cc);
-                var bodyData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Body);
-                var bccData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.Bcc);
-                var useDetailForEveryoneData = customFormDataModel.FirstOrDefault(x => x.Key == ConstantHelper.CustomDataProps.UseDetailForEveryone);
+                var toData = customFormDataModel.To;
+                var subjectData = customFormDataModel.DetailSubject;
+                var sqlQueryConnectionString = customFormDataModel.SqlQueryConStr;
+                var sqlqueryData = customFormDataModel.SqlQuery;
+                var sqlqueryToFieldData = customFormDataModel.SqlQueryToField;
+                var sqlqueryCcFieldData = customFormDataModel.SqlQueryCcField;
+                var sqlqueryBccFieldData = customFormDataModel.SqlQueryBccField;
+                var headerData = customFormDataModel.DetailHeader;
+                var footerData = customFormDataModel.DetailFooter;
+                var detailSqlQueryConnectionString = customFormDataModel.DetailSqlQueryConStr;
+                var detailSqlqueryData = customFormDataModel.DetailSqlQuery;
+                var useSendDataDetailQueryForTemplateData = customFormDataModel.DetailQueryForTemplate;
+                var ccData = customFormDataModel.Cc;
+                var bodyData = customFormDataModel.DetailContent;
+                var bccData = customFormDataModel.Bcc;
+                var useDetailForEveryoneData = customFormDataModel.DetailBodyForAll;
                 #endregion
 
-                var bodyContent = bodyData.Value;
+                var bodyContent = bodyData;
 
                 var listTemplateTokens = new Dictionary<string,string>();
                 var templateTokenRegexMatchRes = Regex.Matches(bodyContent, @"""\[(.*?)]""");
@@ -215,8 +214,8 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     }
                 }
 
-                sendDataItem.Bcc = bccData.Value;
-                sendDataItem.Cc = ccData.Value;
+                sendDataItem.Bcc = bccData;
+                sendDataItem.Cc = ccData;
 
                 sendDataItem.Type = 1; //TODO:Static - Email/Sms
 
@@ -244,7 +243,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var toDataSource = new DataTable();
                 var detailDataSource = new DataTable();
 
-                var recipients = toData.Value.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var recipients = toData.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries).ToList();
                 /*TODO: 
                  - Validsyon1 => To ve Detail Sql var ama detail sql sonuç dönmüyorsa ?
                  */
@@ -253,7 +252,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 {
                     #region Invoke
                     #region Initialize Detail Sqlect Query
-                    var detailQuery = detailSqlqueryData.Value.Replace("@[", "@").Replace("]@", "@");
+                    var detailQuery = detailSqlqueryData.Replace("@[", "@").Replace("]@", "@");
                     List<SqlParameter> parameterList = new List<SqlParameter>();
 
                     if (columnNames?.Count>0)
@@ -280,7 +279,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                     #endregion
 
-                    detailDataSource = await SendDataSqlQueryManager.GetQueryData(detailSqlQueryConnectionString.Value, detailQuery, parameterList);
+                    detailDataSource = await SendDataSqlQueryManager.GetQueryData(detailSqlQueryConnectionString, detailQuery, parameterList);
 
                     string[] detailDataSourceColumnNames = detailDataSource.Columns.Cast<DataColumn>()
                                  .Select(x => x.ColumnName)
@@ -289,7 +288,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
 
                     //detay sorgunun her bir satırı için bir mail mi yoksa detay sorguyu template içinde kullanmak mı ?
-                    if (useSendDataDetailQueryForTemplateData.Value?.ToLower() == "on")
+                    if (useSendDataDetailQueryForTemplateData)
                     {
 
                         changedBodyContent = changedBodyContent.Replace("\"[", "{{{").Replace("]\"", "}}}");
@@ -304,7 +303,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                         //var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString().Trim().Replace("[", "").Replace("]", "");
 
-                        await SendDataBy(sendDataMailAccount, newSendDataItem, subject, changedBodyContent, to, useDetailForEveryoneData.Value);
+                        await SendDataBy(sendDataMailAccount, newSendDataItem, subject, changedBodyContent, to, useDetailForEveryoneData);
                     }
                     else
                     {
@@ -329,21 +328,21 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                             //var to = toDataSource.Rows[i][sqlqueryToFieldData.Value]?.ToString();
 
-                            await SendDataBy(sendDataMailAccount, newSendDataItem, subject, changedBodyContent, to, useDetailForEveryoneData.Value);
+                            await SendDataBy(sendDataMailAccount, newSendDataItem, subject, changedBodyContent, to, useDetailForEveryoneData);
                         }
                     }
                     #endregion
                 };
 
                 //string[] toDataSourceColumns
-                if (string.IsNullOrEmpty(sqlqueryData.Value) == false)
+                if (string.IsNullOrEmpty(sqlqueryData) == false)
                 {
-                    toDataSource = await SendDataSqlQueryManager.GetQueryData(sqlQueryConnectionString.Value, sqlqueryData.Value);
+                    toDataSource = await SendDataSqlQueryManager.GetQueryData(sqlQueryConnectionString, sqlqueryData);
                     if (toDataSource.Rows.Count > 0)
                     {
-                        var toFormField = sqlqueryToFieldData.Value?.Trim();
-                        var ccFormField = sqlqueryCcFieldData.Value?.Trim();
-                        var bccFormField = sqlqueryBccFieldData.Value?.Trim();
+                        var toFormField = sqlqueryToFieldData?.Trim();
+                        var ccFormField = sqlqueryCcFieldData?.Trim();
+                        var bccFormField = sqlqueryBccFieldData?.Trim();
 
                         recipients = new List<string>();
 
@@ -403,9 +402,9 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                     sendDataItem.Bcc = bccField;
                                 }
 
-                                var headerContent = headerData.Value;
-                                var footerContent = footerData.Value;
-                                var subjectContent = subjectData.Value;
+                                var headerContent = headerData;
+                                var footerContent = footerData;
+                                var subjectContent = subjectData;
 
                                 var changedBodyContent = bodyContent.ToString();
 
@@ -429,7 +428,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                 }
                                 #endregion
 
-                                if (string.IsNullOrEmpty(detailSqlqueryData.Value) == false)
+                                if (string.IsNullOrEmpty(detailSqlqueryData) == false)
                                 {
                                     changedBodyContent = changedBodyContent.Replace("\"[HEADER]\"", headerContent);
 
@@ -448,7 +447,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                         changedBodyContent = changedBodyContent.Replace("\"[FOOTER]\"", footerContent);
 
                                         var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
-                                        await SendDataBy(sendDataMailAccount, newSendDataItem, subjectContent, changedBodyContent, new List<string>() { to }, useDetailForEveryoneData.Value);
+                                        await SendDataBy(sendDataMailAccount, newSendDataItem, subjectContent, changedBodyContent, new List<string>() { to }, useDetailForEveryoneData);
                                     }
 
                                 }
@@ -500,14 +499,14 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     }
 
                 }
-                else if (string.IsNullOrEmpty(detailSqlqueryData.Value) == false)
+                else if (string.IsNullOrEmpty(detailSqlqueryData) == false)
                 {
-                    invokeDetailQuery(recipients, bodyContent, null,subjectData.Value);
+                    invokeDetailQuery(recipients, bodyContent, null,subjectData);
                 }
                 else if (recipients.Count > 0)
                 {
                     var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
-                    await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData.Value, bodyContent, recipients, useDetailForEveryoneData.Value);
+                    await SendDataBy(sendDataMailAccount, newSendDataItem, subjectData, bodyContent, recipients, useDetailForEveryoneData);
                 }
 
                 return true;
@@ -532,7 +531,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
             }
         }
 
-        private static async Task SendDataBy(SendDataMailAccount sendDataMailAccount, SendDataItem sendDataItem,string subject,string bodyContent, List<string> recipients,string useDetailForEveryoneDataValue)
+        private static async Task SendDataBy(SendDataMailAccount sendDataMailAccount, SendDataItem sendDataItem,string subject,string bodyContent, List<string> recipients,bool useDetailForEveryoneDataValue)
         {
             #region Send Email
             Stopwatch stopwatch = new Stopwatch();
@@ -608,7 +607,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
             };
 
             //herkes icin tek template kullan
-            if (useDetailForEveryoneDataValue?.ToLower() == "on")
+            if (useDetailForEveryoneDataValue)
             {
                 sendMailAction(recipients);
             }

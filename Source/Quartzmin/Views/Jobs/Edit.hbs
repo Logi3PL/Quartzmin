@@ -75,26 +75,18 @@
         </div>
         {{/with}}
 
-        {{#if Model.Job.IsNew}}{{else}}
-
-        {{#contains Model.Job.JobName "SendMail"}}
+        <input type="hidden" name="job[CustomFormDataJsonModel]" id="customFormDataJsonModelField" value="{{Model.Job.CustomFormDataJsonModel}}" />
 
         <div id="sendDataJobFormContainer">
             {{>SendData/SendDataJobForm Model}}
         </div>
 
-        {{/contains}}
-
-
-        {{#contains Model.Job.JobName "WebApiCall"}}
-
         <div id="webApiCallJobFormContainer">
             {{>WebApiCall/WebApiCallJobForm Model}}
         </div>
+        <h3 class="ui dividing header">Job Data Map</h3>
 
-        {{/contains}}
-
-        {{/if}}
+        {{>JobDataMap Model.DataMap}}
 
     </div>
 </form>
@@ -112,6 +104,71 @@
 
 <script>
 
+    function sendDataJobFormContainerShow() {
+        debugger;
+        var customFormDataJsonModelFieldValue = $('#customFormDataJsonModelField').val();
+
+        if (customFormDataJsonModelFieldValue && customFormDataJsonModelFieldValue.length>0) {
+            var dataModel = JSON.parse(customFormDataJsonModelFieldValue);
+            SetDataForSendDataJob(dataModel);
+        }
+        
+        $('#sendDataJobFormContainer').show();
+    }
+
+    function webApiCallJobFormContainerShow() {
+        debugger;
+        var customFormDataJsonModelFieldValue = $('#customFormDataJsonModelField').val();
+
+        if (customFormDataJsonModelFieldValue && customFormDataJsonModelFieldValue.length > 0) {
+            var dataModel = JSON.parse(customFormDataJsonModelFieldValue);
+            SetDataForWebApiCall(dataModel);
+        }
+        
+        $('#webApiCallJobFormContainer').show();
+    }
+
+    function checkJobFormContainer(jobType) {
+        debugger;
+
+        if (jobType.indexOf('SendMailJob') > -1) {
+
+            sendDataJobFormContainerShow();
+        } else {
+            $('#sendDataJobFormContainer').hide();
+        }
+
+        if (jobType.indexOf('WebApiCall') > -1) {
+
+            webApiCallJobFormContainerShow();
+        } else {
+            $('#webApiCallJobFormContainer').hide();
+        }
+    }
+
+    function GetJobFormContainerDataAndSetFormField() {
+        debugger;
+
+        if ($('#jobTypeDropdown').val().indexOf('SendMailJob') < 0) {
+
+            $('#sendDataJobFormContainer').remove();
+        } else {
+            var customDataModel = GetDataForSendDataJob();
+
+            $('#customFormDataJsonModelField').val(JSON.stringify(customDataModel));
+        }
+
+        if ($('#jobTypeDropdown').val().indexOf('WebApiCall') < 0) {
+
+            $('#webApiCallJobFormContainer').remove();
+        } else {
+            var customDataModel = GetDataForWebApiCall();
+
+            $('#customFormDataJsonModelField').val(JSON.stringify(customDataModel));
+        }
+
+    }
+
     $(function () {
         
         const
@@ -119,36 +176,12 @@
             $jobName = $('#jobName').val(),
             $jobType = $('#jobType').val();
 
-        if ($jobType.indexOf('SendMailJob') > -1) {
-
-            $('#sendDataJobFormContainer').show();
-        } else {
-            $('#sendDataJobFormContainer').hide();
-        }
-
         //Edit asamasında formu goster
-        if ($jobType.indexOf('WebApiCall') > -1) {
-
-            $('#webApiCallJobFormContainer').show();
-        } else {
-            $('#webApiCallJobFormContainer').hide();
-        }
+        checkJobFormContainer($jobType);
 
         $('#jobTypeDropdown').on('change', function () {
 
-            if (this.value.indexOf('SendMailJob') > -1) {
-
-                $('#sendDataJobFormContainer').show();
-            } else {
-                $('#sendDataJobFormContainer').hide();
-            }
-
-            if (this.value.indexOf('WebApiCall') > -1) {
-
-                $('#webApiCallJobFormContainer').show();
-            } else {
-                $('#webApiCallJobFormContainer').hide();
-            }
+            checkJobFormContainer(this.value);
         });
 
         // inits
@@ -178,6 +211,8 @@
             $('#dimmer').dimmer('show');
 
             $('#job-data-map').jobDataMapPrepareForm();
+            
+            GetJobFormContainerDataAndSetFormField();
 
             var formData = new FormData($('#form')[0]);
 

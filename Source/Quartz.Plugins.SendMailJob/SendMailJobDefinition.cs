@@ -59,7 +59,6 @@ namespace Quartz.Plugins
             if (jobDataKeys.Contains(ConstantHelper.CustomData))
             {
                 var customFormData = context.JobDetail.JobDataMap.GetString(ConstantHelper.CustomData);
-                var customFormDataModel = JsonConvert.DeserializeObject<List<CustomDataModel>>(customFormData);
 
                 var sendDataItem = new SendDataItem()
                 {
@@ -78,7 +77,9 @@ namespace Quartz.Plugins
 
                 try
                 {
-                    await SendDataItemManager.GenerateSendDataItemFrom(customFormDataModel, sendDataItem);
+                    var customFormDataObject = JsonConvert.DeserializeObject<SendDataViewModel>(customFormData);
+
+                    await SendDataItemManager.GenerateSendDataItemFrom(customFormDataObject, sendDataItem);
                 }
                 catch (Exception ex)
                 {
@@ -90,7 +91,7 @@ namespace Quartz.Plugins
                         LogItemProperties = new List<LogItemProperty>() {
                                         new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
                                         new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
-                                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel, SendDataItem = sendDataItem}),
+                                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormData, SendDataItem = sendDataItem}),
                                     },
                         LogLevel = LogLevel.Error,
                         Exception = ex
