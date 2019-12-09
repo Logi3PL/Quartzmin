@@ -329,3 +329,4 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 /Source/Examples/AspNetWebHost/logs/logfile.txt
+/Source.rar
