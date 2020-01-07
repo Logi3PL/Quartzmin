@@ -13,5 +13,8 @@ namespace Quartz.Plugins.WebApiCallJob.Models
         public string HttpMethodContentType { get; set; }
         public string HttpMethodHeader { get; set; }
         public string HttpMethodParameter { get; set; }
+        //public bool CheckResponse { get; set; }
+        //public string CheckResponseQuery { get; set; }
+        //public bool SendResponseAsEmail { get; set; }
     }
 }
