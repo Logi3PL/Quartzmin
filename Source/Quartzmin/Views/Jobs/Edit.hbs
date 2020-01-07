@@ -84,6 +84,10 @@
         <div id="webApiCallJobFormContainer">
             {{>WebApiCall/WebApiCallJobForm Model}}
         </div>
+        
+        <div id="scriptExecuterJobFormContainer">
+            {{>ExecuteScript/ExecuteScriptJobForm Model}}
+        </div>
         <h3 class="ui dividing header">Job Data Map</h3>
 
         {{>JobDataMap Model.DataMap}}
@@ -128,6 +132,18 @@
         $('#webApiCallJobFormContainer').show();
     }
 
+    function scriptExecuterJobFormContainerShow() {
+        debugger;
+        var customFormDataJsonModelFieldValue = $('#customFormDataJsonModelField').val();
+
+        if (customFormDataJsonModelFieldValue && customFormDataJsonModelFieldValue.length > 0) {
+            var dataModel = JSON.parse(customFormDataJsonModelFieldValue);
+            SetDataForScriptExecuter(dataModel);
+        }
+
+        $('#scriptExecuterJobFormContainer').show();
+    }
+
     function checkJobFormContainer(jobType) {
         debugger;
 
@@ -143,6 +159,13 @@
             webApiCallJobFormContainerShow();
         } else {
             $('#webApiCallJobFormContainer').hide();
+        }
+
+        if (jobType.indexOf('ScriptExecuter') > -1) {
+
+            scriptExecuterJobFormContainerShow();
+        } else {
+            $('#scriptExecuterJobFormContainer').hide();
         }
     }
 
@@ -163,6 +186,15 @@
             $('#webApiCallJobFormContainer').remove();
         } else {
             var customDataModel = GetDataForWebApiCall();
+
+            $('#customFormDataJsonModelField').val(JSON.stringify(customDataModel));
+        }
+
+        if ($('#jobTypeDropdown').val().indexOf('ScriptExecuter') < 0) {
+
+            $('#scriptExecuterJobFormContainer').remove();
+        } else {
+            var customDataModel = GetDataForScriptExecuter();
 
             $('#customFormDataJsonModelField').val(JSON.stringify(customDataModel));
         }

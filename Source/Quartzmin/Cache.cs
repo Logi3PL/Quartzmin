@@ -29,7 +29,8 @@ namespace Quartzmin
                             //TODO:Klasörden plugin gibi oku
                             var knownTypes = new List<string>() {
                                 "Quartz.Plugins.SendMailJobDefinition, Quartz.Plugins.SendMailJob",
-                                "Quartz.Plugins.WebApiCallJobDefinition, Quartz.Plugins.WebApiCallJob"
+                                "Quartz.Plugins.WebApiCallJobDefinition, Quartz.Plugins.WebApiCallJob",
+                                "Quartz.Plugins.ScriptExecuterJobDefinition, Quartz.Plugins.ScriptExecuterJob"
                             };
                             foreach (var key in keys)
                             {

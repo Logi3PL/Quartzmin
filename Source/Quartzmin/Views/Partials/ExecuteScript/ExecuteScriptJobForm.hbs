@@ -1,0 +1,51 @@
+﻿<div id="scriptExecuterJobFormContainerWizard">
+    <h3>Execute Script</h3>
+    <section>
+        <label for="scriptType">Script Type</label>
+        <select class="ui fluid dropdown allow-empty" id="scripttype">
+            <option value="">--- Not Set ---</option>
+            <option value="TSql">T-Sql</option>
+        </select>
+        <div>
+            <label for="connectionstring">Connection String</label>
+            <input type="text" id="connectionstring" />
+            <span></span>
+            <label for="scriptsource">Script</label>
+            <textarea id="scriptsource" cols="40" rows="5" style="resize: none;"></textarea>
+        </div>
+    </section>
+</div>
+
+<script type="text/javascript">
+    $("#scriptExecuterJobFormContainerWizard").steps({
+        headerTag: "h3",
+        bodyTag: "section",
+        transitionEffect: "slideLeft",
+        autoFocus: true,
+        enableFinishButton: false,
+        titleTemplate: '#title#',
+        onInit: function (event, current) {
+            $('.actions > ul > li:first-child').attr('style', 'display:none');
+        }
+    });
+
+    function SetDataForScriptExecuter(model) {
+        debugger;
+        $("#scriptsource").val(model.ScriptSource);
+        $("#scripttype").val(model.ScriptType);
+        $("#connectionstring").val(model.ConnectionString);
+    }
+
+    function GetDataForScriptExecuter() {
+        debugger;
+        var scriptSource = $("#scriptsource").val();
+        var scriptType = $("#scripttype").val();
+        var connectionString = $("#connectionstring").val();
+
+        return {
+            ScriptSource: scriptSource, ScriptType: scriptType, ConnectionString: connectionString
+        };
+    }
+</script>
+<script src="Content/Scripts/jquery.steps.min.js"></script>
+<link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />
