@@ -36,7 +36,7 @@ namespace Quartzmin.AspNet
                 };
 
                 configuration["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
-                configuration["quartz.threadPool.threadCount"] = "5";
+                configuration["quartz.threadPool.threadCount"] = "15";
                 configuration["quartz.threadPool.threadPriority"] = "Normal";
                 configuration["quartz.plugin.recentHistory.type"] = "Quartz.Plugins.RecentHistory.ExecutionHistoryPlugin, Quartz.Plugins.RecentHistory";
 
@@ -45,7 +45,7 @@ namespace Quartzmin.AspNet
                 StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
                 scheduler = factory.GetScheduler().GetAwaiter().GetResult();
 
-                scheduler.Start();
+                //scheduler.Start();
 
                 if (scheduler.IsStarted)
                 {

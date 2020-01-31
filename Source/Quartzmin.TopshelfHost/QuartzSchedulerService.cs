@@ -53,7 +53,7 @@ namespace Quartzmin.TopshelfHost
                 _timer.Elapsed += (sender,e)=> {
                     try
                     {
-                        if (scheduler.IsStarted == false)
+                        if (scheduler.IsStarted == false || scheduler.IsShutdown)
                         {
                             this.StartScheduler();
                         }
@@ -192,7 +192,7 @@ namespace Quartzmin.TopshelfHost
 
         private void StopScheduler()
         {
-            scheduler.Shutdown().ConfigureAwait(false).GetAwaiter().GetResult();
+            //scheduler.Shutdown().ConfigureAwait(false).GetAwaiter().GetResult();
             LoggerService.GetLogger("LOGIJMS").Log(new LogItem()
             {
                 LoggerName = "LOGIJMS",
