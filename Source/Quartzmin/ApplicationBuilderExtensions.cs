@@ -43,7 +43,7 @@ namespace Quartzmin
             {
                 routes.MapRoute(
                     name: nameof(Quartzmin),
-                    template: "{controller=Scheduler}/{action=Index}");
+                    template: "{controller=Scheduler}/{action=Index}");                
             });
         }
 

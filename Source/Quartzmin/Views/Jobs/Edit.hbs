@@ -84,9 +84,13 @@
         <div id="webApiCallJobFormContainer">
             {{>WebApiCall/WebApiCallJobForm Model}}
         </div>
-        
+
         <div id="scriptExecuterJobFormContainer">
             {{>ExecuteScript/ExecuteScriptJobForm Model}}
+        </div>
+
+        <div id="buulkCopyJobFormContainer">
+            {{>BulkCopy/BulkCopyJobForm Model}}
         </div>
         <h3 class="ui dividing header">Job Data Map</h3>
 
@@ -144,6 +148,18 @@
         $('#scriptExecuterJobFormContainer').show();
     }
 
+     function setDataForBulkJobFormContainerShow() {
+        debugger;
+        var customFormDataJsonModelFieldValue = $('#customFormDataJsonModelField').val();
+
+        if (customFormDataJsonModelFieldValue && customFormDataJsonModelFieldValue.length > 0) {
+            var dataModel = JSON.parse(customFormDataJsonModelFieldValue);
+            SetDataForBulkCopy(dataModel);
+        }
+
+        $('#buulkCopyJobFormContainer').show();
+    }
+
     function checkJobFormContainer(jobType) {
         debugger;
 
@@ -166,6 +182,13 @@
             scriptExecuterJobFormContainerShow();
         } else {
             $('#scriptExecuterJobFormContainer').hide();
+        }
+
+        if (jobType.indexOf('BulkCopy') > -1) {
+
+            setDataForBulkJobFormContainerShow();
+        } else {
+            $('#buulkCopyJobFormContainer').hide();
         }
     }
 
@@ -195,6 +218,15 @@
             $('#scriptExecuterJobFormContainer').remove();
         } else {
             var customDataModel = GetDataForScriptExecuter();
+
+            $('#customFormDataJsonModelField').val(JSON.stringify(customDataModel));
+        }
+        
+        if ($('#jobTypeDropdown').val().indexOf('BulkCopy') < 0) {
+
+            $('#buulkCopyJobFormContainer').remove();
+        } else {
+            var customDataModel = GetDataForBulkCopy();
 
             $('#customFormDataJsonModelField').val(JSON.stringify(customDataModel));
         }

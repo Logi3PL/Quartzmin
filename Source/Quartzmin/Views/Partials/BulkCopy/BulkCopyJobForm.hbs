@@ -1,0 +1,91 @@
+﻿<div id="bulkCopyJobFormContainerWizard">
+    <h3>Bulk Copy</h3>
+    <section>
+        <div>
+            <label for="sourceconnectionstring">Source Connection String</label>
+            <input type="text" id="sourceconnectionstring" />
+            <span></span>
+            <label>Load Tables</label>
+            <input type="button" id="loadTables" value="Load Tables" onclick="loadTableDatas()" />
+            <span></span>
+        </div>
+        <div>
+            <label for="destinationconnectionstring">Destination Connection String</label>
+            <input type="text" id="destinationconnectionstring" />
+            <span></span>
+        </div>
+        <div>
+            <div id="jsGrid"></div>
+        </div>
+    </section>
+</div>
+
+<script type="text/javascript">
+
+    $("#bulkCopyJobFormContainerWizard").steps({
+        headerTag: "h3",
+        bodyTag: "section",
+        transitionEffect: "slideLeft",
+        autoFocus: true,
+        enableFinishButton: false,
+        titleTemplate: '#title#',
+        onInit: function (event, current) {
+            $('.actions > ul > li:first-child').attr('style', 'display:none');
+        }
+    });
+
+    function loadTableDatas() {
+
+        var tableActions = [
+            { Action: "TRUNCATEADD", Id: 0 },
+            { Action: "ADD", Id: 0 }
+        ];
+
+        var url = "BulkCopyApi/LoadTables?conString=" + $("#sourceconnectionstring").val();
+        $.getJSON(url, function (tables) {
+
+            debugger;
+            $("#jsGrid").jsGrid({
+                width: "100%",
+                height: "400px",
+
+                inserting: false,
+                editing: false,
+                sorting: true,
+                paging: false,
+
+                data: tables,
+
+                fields: [
+                    { name: "Selected", type: "checkbox", title: "Selected", sorting: false },
+                    { name: "Name", type: "text", width: 150 },
+                    { name: "Actions", type: "select", items: tableActions, valueField: "Id", textField: "Name" }
+                ]
+            });
+
+        });
+
+    }
+
+    function SetDataForBulkCopy(model) {
+        debugger;
+        $("#sourceconnectionstring").val(model.SourceConnectionString);
+        $("#destinationconnectionstring").val(model.DestinationConnectionString);
+    }
+
+    function GetDataForBulkCopy() {
+        debugger;
+        var sourceConnectionString = $("#sourceconnectionstring").val();
+        var destinationConnectionString = $("#destinationconnectionstring").val();
+
+        return {
+            SourceConnectionString: sourceConnectionString, DestinationConnectionString: destinationConnectionString
+        };
+    }
+</script>
+<script type="text/javascript" src="Content/Scripts/jsgrid/jsgrid.min.js"></script>
+<script src="Content/Scripts/jquery.steps.min.js"></script>
+<link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />
+<link type="text/css" rel="stylesheet" href="Content/Scripts/jsgrid/jsgrid.min.css" />
+<link type="text/css" rel="stylesheet" href="Content/Scripts/jsgrid/jsgrid-theme.min.css" />
+
