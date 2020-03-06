@@ -568,7 +568,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         
                     }
 
-                    foreach (var ccItem in sendDataItem.Cc.Split(new[] { ";" },StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var ccItem in sendDataItem.Cc.Replace(";", ",").Trim().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (string.IsNullOrEmpty(ccItem.Trim()) == false)
                         {
@@ -576,7 +576,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         }
                     }
 
-                    foreach (var bccItem in sendDataItem.Bcc.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var bccItem in sendDataItem.Bcc.Replace(";", ",").Trim().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (string.IsNullOrEmpty(bccItem.Trim()) == false)
                         {
@@ -584,27 +584,9 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         }
                     }
 
-                    //if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
-                    //{
-                    //    mail.Bcc.Add(sendDataItem.Bcc);
-                    //}
-
                     mail.Subject = subject;
                     mail.Body = bodyContent;
                     mail.IsBodyHtml = true;
-
-                    LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
-                    {
-                        LoggerName = ConstantHelper.JobLog,
-                        Title = "GenerateSendDataItemFrom_Test_Send_Email",
-                        Message = "GetMailAccounts Not Found",
-                        LogItemProperties = new List<LogItemProperty>() {
-                                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
-                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
-                                        new LogItemProperty("FormData", new { RecipientList =recipientList})
-                                    },
-                        LogLevel = LogLevel.Debug
-                    });
 
                     SmtpServer.Port = sendDataMailAccount.MailSmtpPort;
                     SmtpServer.Credentials = new System.Net.NetworkCredential(sendDataMailAccount.AccountName, sendDataMailAccount.AccountPass);
