@@ -568,15 +568,26 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         
                     }
 
-                    if (string.IsNullOrEmpty(sendDataItem.Cc) == false)
+                    foreach (var ccItem in sendDataItem.Cc.Split(new[] { ";" },StringSplitOptions.RemoveEmptyEntries))
                     {
-                        mail.CC.Add(sendDataItem.Cc.Replace(";", ",").Trim());
+                        if (string.IsNullOrEmpty(ccItem.Trim()) == false)
+                        {
+                            mail.CC.Add(ccItem.Trim());
+                        }
                     }
 
-                    if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
+                    foreach (var bccItem in sendDataItem.Bcc.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        mail.Bcc.Add(sendDataItem.Bcc.Replace(";", ",").Trim());
+                        if (string.IsNullOrEmpty(bccItem.Trim()) == false)
+                        {
+                            mail.Bcc.Add(bccItem.Trim());
+                        }
                     }
+
+                    //if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
+                    //{
+                    //    mail.Bcc.Add(sendDataItem.Bcc);
+                    //}
 
                     mail.Subject = subject;
                     mail.Body = bodyContent;
