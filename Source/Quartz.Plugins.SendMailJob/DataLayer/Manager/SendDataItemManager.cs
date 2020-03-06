@@ -190,7 +190,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var ccData = customFormDataModel.Cc;
                 var bodyData = customFormDataModel.DetailContent;
                 var bccData = customFormDataModel.Bcc;
-                var useDetailForEveryoneData = customFormDataModel.DetailBodyForAll;
+                var useDetailForEveryoneData = customFormDataModel.DetailBodyForAll == false; //TODO: UI'da ayrı ayrı gönder olarak gösterildigi icin ters kalıyor
                 #endregion
 
                 var bodyContent = bodyData;
@@ -552,9 +552,14 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                     foreach (var recipient in recipientList.Distinct())
                     {
-                        if (recipient.Contains(";"))
+                        if (recipient.Contains(";") || recipient.Contains(","))
                         {
-                            mail.To.Add(recipient.Replace(";", ",").Trim());
+                            var rcp = recipient.Replace(";", ",").Trim().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                            foreach (var rcpItem in rcp)
+                            {
+                                mail.To.Add(rcpItem);
+                            }
                         }
                         else
                         {
@@ -565,17 +570,30 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                     if (string.IsNullOrEmpty(sendDataItem.Cc) == false)
                     {
-                        mail.CC.Add(sendDataItem.Cc);
+                        mail.CC.Add(sendDataItem.Cc.Replace(";", ",").Trim());
                     }
 
                     if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
                     {
-                        mail.Bcc.Add(sendDataItem.Bcc);
+                        mail.Bcc.Add(sendDataItem.Bcc.Replace(";", ",").Trim());
                     }
 
                     mail.Subject = subject;
                     mail.Body = bodyContent;
                     mail.IsBodyHtml = true;
+
+                    LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                    {
+                        LoggerName = ConstantHelper.JobLog,
+                        Title = "GenerateSendDataItemFrom_Test_Send_Email",
+                        Message = "GetMailAccounts Not Found",
+                        LogItemProperties = new List<LogItemProperty>() {
+                                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
+                                        new LogItemProperty("ActionName", "GenerateSendDataItemFrom"),
+                                        new LogItemProperty("FormData", new { RecipientList =recipientList})
+                                    },
+                        LogLevel = LogLevel.Debug
+                    });
 
                     SmtpServer.Port = sendDataMailAccount.MailSmtpPort;
                     SmtpServer.Credentials = new System.Net.NetworkCredential(sendDataMailAccount.AccountName, sendDataMailAccount.AccountPass);
@@ -583,6 +601,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                     SmtpServer.Send(mail);
                     sendDataItem.SentDate = DateTimeOffset.Now;
+
                 }
                 catch (Exception ex)
                 {
