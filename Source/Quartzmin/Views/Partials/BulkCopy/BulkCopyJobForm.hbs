@@ -16,11 +16,13 @@
         </div>
         <div>
             <div id="jsGrid"></div>
+            <table id="grid"></table>
         </div>
     </section>
 </div>
 
 <script type="text/javascript">
+    var changedIterms = [];
 
     $("#bulkCopyJobFormContainerWizard").steps({
         headerTag: "h3",
@@ -34,33 +36,106 @@
         }
     });
 
+    var tableActions = [
+        { Action: "", Id: -1 },
+        { Action: "TRUNCATEADD", Id: 1 },
+        { Action: "ADD", Id: 2 }
+    ];
+
     function loadTableDatas() {
 
-        var tableActions = [
-            { Action: "TRUNCATEADD", Id: 0 },
-            { Action: "ADD", Id: 0 }
-        ];
-
         var url = "BulkCopyApi/LoadTables?conString=" + $("#sourceconnectionstring").val();
-        $.getJSON(url, function (tables) {
+        $.getJSON(url, function (tableJson) {
+            var tables = JSON.parse(tableJson);
+
+            if (changedIterms != null && changedIterms != undefined) {
+                debugger;
+
+                changedIterms.forEach(function(item, index) {
+                    var rowItem = tables.find(x => x.Name === item.Name);
+                    if (rowItem != null && rowItem != undefined) {
+
+                        rowItem.Actions = item.Action;
+                    }
+                });
+
+            }
 
             debugger;
+            
+
             $("#jsGrid").jsGrid({
                 width: "100%",
                 height: "400px",
 
                 inserting: false,
-                editing: false,
+                editing: true,
                 sorting: true,
                 paging: false,
 
                 data: tables,
+                onItemUpdating: function (args) {
+                    debugger;
 
+                    changedIterms.push({ Name: args.item.Name, Action:args.item.Actions});
+                },
                 fields: [
-                    { name: "Selected", type: "checkbox", title: "Selected", sorting: false },
-                    { name: "Name", type: "text", width: 150 },
-                    { name: "Actions", type: "select", items: tableActions, valueField: "Id", textField: "Name" }
-                ]
+                    { name: "Name", type: "text", width: 150,editing: false },
+                    { name: "Actions", type: "select", items: tableActions, valueField: "Id", textField: "Action" },
+                    { name: "-", width: 150,editing: false,title:'<=>' },
+                    { type: "control", editButton: true,deleteButton: false}
+                ],
+                //rowRenderer: function(item) {
+                // var $row = $("<tr>");
+
+                //      var $columnGrid = $("<div>").addClass("detail-grid").hide();
+
+                //      $columnGrid.jsGrid({
+                    //       width: 200,
+                //          height: "auto",
+                //            editing: true,
+                //            data: item.Columns,
+                //          fields: [
+                //              { name: "Selected", type: "checkbox", title: "Selected", sorting: false },
+                //              { name: "Name", width: 200 },
+                //              { name: "Type", width: 200 },
+                //              { name: "IsNullable", width: 100 },
+                //              { type: "control", editButton: true, deleteButton: false }
+                //        ]
+                //      });
+
+                //      var $colItem = $("<span>").text(item.Name)
+                 			    //	        .prop("style", "color:blue")
+                 			    //	        .dblclick(function() {
+                //        	        $columnGrid.toggle();
+                //            }).append($columnGrid);
+
+                //    $row.append($("<td class='jsgrid-cell' style='width: 100px;'>").append($colItem));
+                //    $row.append($("<td class='jsgrid-cell' style='width: 100px;'>").append($("<span>").text(item.Actions)));
+                //    $row.append($("<td class='jsgrid-cell' style='width: 100px;'>").append($("<span>").text("-")));
+
+                //    return $row;
+                //}
+    //           editRowRenderer: function(item, itemIndex) {
+    //               var grid = this;
+    //               var $nameEditor = $("<input>").attr("type", "text").attr("name", "Name").val(item.Name);
+
+    //               var $updateButton = $("<input>").attr("type", "button").addClass("jsgrid-button jsgrid-update-button");
+    //               var $cancelButton = $("<input>").attr("type", "button").addClass("jsgrid-button jsgrid-cancel-button");
+
+    //$updateButton.on("click", function() {
+    //       	        grid.updateItem(item, { Name: $nameEditor.val() });
+    //               });
+
+    //$cancelButton.on("click", function() {
+    //       	        grid.cancelEdit();
+    //               });
+
+    //               return $("<tr>")
+    //                 .append($("<td>").append($nameEditor))
+    //                 .append($updateButton)
+    //                 .append($cancelButton);
+    //           }
             });
 
         });
@@ -71,21 +146,29 @@
         debugger;
         $("#sourceconnectionstring").val(model.SourceConnectionString);
         $("#destinationconnectionstring").val(model.DestinationConnectionString);
+
+        if (model != null && model != undefined && (model.SourceConnectionString != null && model.SourceConnectionString != undefined)) {
+
+            changedIterms = model.ChangedItems;
+            loadTableDatas();
+        }
     }
 
     function GetDataForBulkCopy() {
         debugger;
+
         var sourceConnectionString = $("#sourceconnectionstring").val();
         var destinationConnectionString = $("#destinationconnectionstring").val();
 
         return {
-            SourceConnectionString: sourceConnectionString, DestinationConnectionString: destinationConnectionString
+            SourceConnectionString: sourceConnectionString, DestinationConnectionString: destinationConnectionString, ChangedItems : changedIterms
         };
     }
 </script>
 <script type="text/javascript" src="Content/Scripts/jsgrid/jsgrid.min.js"></script>
-<script src="Content/Scripts/jquery.steps.min.js"></script>
-<link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />
 <link type="text/css" rel="stylesheet" href="Content/Scripts/jsgrid/jsgrid.min.css" />
 <link type="text/css" rel="stylesheet" href="Content/Scripts/jsgrid/jsgrid-theme.min.css" />
+<script src="Content/Scripts/jquery.steps.min.js"></script>
+<link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />
+
 

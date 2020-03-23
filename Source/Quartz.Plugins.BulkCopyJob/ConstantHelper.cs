@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace Quartz.Plugins.ScriptExecuterJob
+namespace Quartz.Plugins.BulkCopyJob
 {
     public struct ConstantHelper
     {
@@ -20,10 +20,10 @@ namespace Quartz.Plugins.ScriptExecuterJob
             return conStr;
         }
 
-        public struct CustomDataProps
+        public struct TableActions
         {
-            public const string ScriptType = "scripttype";
-            public const string ScriptSource = "scriptsource";
+            public const string TruncateAdd = "1";
+            public const string Add = "2";
         }
     }
 }

@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Quartz.Plugins.ScriptExecuterJob;
-using Quartz.Plugins.ScriptExecuterJob.Models;
 using Slf;
 using System;
 using System.Collections.Generic;
@@ -14,6 +12,8 @@ using System.Net;
 using System.IO;
 using System.IO.Compression;
 using Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager;
+using Quartz.Plugins.BulkCopyJob.Models;
+using Quartz.Plugins.BulkCopyJob;
 
 #if NETSTANDARD
 //using Slf.NetCore;
@@ -42,7 +42,65 @@ namespace Quartz.Plugins
             var trgGroup = context.Trigger.Key.Group;
 
             var jobDataKeys = context.JobDetail.JobDataMap.GetKeys();
-           
+
+            var customFormDataModel = new BulkCopyViewModel();
+
+            if (jobDataKeys.Contains(ConstantHelper.CustomData))
+            {
+                var customFormData = context.JobDetail.JobDataMap.GetString(ConstantHelper.CustomData);
+                customFormDataModel = JsonConvert.DeserializeObject<BulkCopyViewModel>(customFormData);
+            }
+
+            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+            {
+                LoggerName = ConstantHelper.JobLog,
+                Title = $"{this.GetType()} Started",
+                Message = $"{this.GetType()} Started",
+                LogItemProperties = new List<LogItemProperty>() {
+                    new LogItemProperty("ServiceName", ConstantHelper.JobLog),
+                    new LogItemProperty("ScheduleName", scheduleName),
+                    new LogItemProperty("JobName", jobName),
+                    new LogItemProperty("JobGroup", jobGroup),
+                    new LogItemProperty("TriggerName", trgName),
+                    new LogItemProperty("TriggerGroup", trgGroup)
+                },
+                LogLevel = LogLevel.Info
+            });
+
+            if (customFormDataModel != null)
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                try
+                {
+                    BulkCopyManager.ExecuteQuery(customFormDataModel);
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                    {
+                        LoggerName = ConstantHelper.JobLog,
+                        Title = $"{this.GetType()} Execution Error",
+                        Message = ex.Message,
+                        LogItemProperties = new List<LogItemProperty>() {
+                                        new LogItemProperty("ServiceName", ConstantHelper.JobLog),
+                                        new LogItemProperty("ScheduleName", scheduleName),
+                                        new LogItemProperty("JobName", jobName),
+                                        new LogItemProperty("JobGroup", jobGroup),
+                                        new LogItemProperty("TriggerName", trgName),
+                                        new LogItemProperty("TriggerGroup", trgGroup),
+                                        new LogItemProperty("ActionName", "ExecuteQuery"),
+                                        new LogItemProperty("FormData", new { CustomFormDataModel =customFormDataModel}),
+                                    },
+                        LogLevel = LogLevel.Error,
+                        Exception = ex
+                    });
+                }
+
+                stopwatch.Stop();
+
+            }
 
         }
     }

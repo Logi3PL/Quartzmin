@@ -92,9 +92,11 @@
         <div id="buulkCopyJobFormContainer">
             {{>BulkCopy/BulkCopyJobForm Model}}
         </div>
-        <h3 class="ui dividing header">Job Data Map</h3>
+        <div style="display:none">
+            <h3 class="ui dividing header">Job Data Map</h3>
 
-        {{>JobDataMap Model.DataMap}}
+            {{>JobDataMap Model.DataMap}}
+        </div>        
 
     </div>
 </form>
