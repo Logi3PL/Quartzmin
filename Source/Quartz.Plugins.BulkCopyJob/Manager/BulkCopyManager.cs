@@ -13,10 +13,17 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
 {
     public class BulkCopyManager
     {
-        public static async Task<bool> ExecuteQuery(BulkCopyViewModel viewModel)
+        Dictionary<string, string> tableRowCounts ;
+
+        public BulkCopyManager()
+        {
+            tableRowCounts = new Dictionary<string, string>();
+        }
+
+        public async Task<bool> ExecuteQuery(BulkCopyViewModel viewModel)
         {
             bool returnValue = false;
-
+            
             try
             {
                 using (SqlConnection destConnection = new SqlConnection(viewModel.DestinationConnectionString))
@@ -77,6 +84,11 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                                     var createTableCommand = new SqlCommand(createTableBuilder.ToString(), destConnection);
                                     createTableCommand.ExecuteNonQuery();
                                 }
+                                else
+                                {
+                                    var createTableCommand = new SqlCommand($"TRUNCATE TABLE {tableName}", destConnection);
+                                    createTableCommand.ExecuteNonQuery();
+                                }
                             }
                             
                         }
@@ -110,7 +122,24 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                                 sourceConnection.Open();
                             }
 
-                            SqlCommand myCommand = new SqlCommand($"SELECT * FROM {tableName}", sourceConnection);
+                            var whereClause = item.Where?.Trim();
+
+                            if (string.IsNullOrEmpty(item.Where) == false)
+                            {
+                                whereClause = item.Where;
+
+                                if (whereClause.ToLower().StartsWith("where")==false)
+                                {
+                                    whereClause = "WHERE " + whereClause;
+                                }
+                            }
+
+                            SqlCommand myCommand = new SqlCommand($"SELECT * FROM {tableName} {whereClause}", sourceConnection);
+
+                            SqlCommand myRowCommand = new SqlCommand($"SELECT count(*) FROM {tableName} {whereClause}", sourceConnection);
+                            var rowCount = myRowCommand.ExecuteScalar()?.ToString();
+
+                            tableRowCounts[tableName] = rowCount;
 
                             reader = myCommand.ExecuteReader();
 
@@ -119,6 +148,9 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                             using (var bulkCopy = new SqlBulkCopy(destConnection))
                             {
                                 bulkCopy.DestinationTableName = tableName;
+                                bulkCopy.BatchSize = 50;
+                                bulkCopy.SqlRowsCopied += new SqlRowsCopiedEventHandler(OnSqlRowsCopied);
+                                bulkCopy.NotifyAfter = 50;
                                 bulkCopy.WriteToServer(reader);
                             }
 
@@ -185,6 +217,28 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
             }
 
             return returnValue;
+        }
+
+        private void OnSqlRowsCopied(object sender, SqlRowsCopiedEventArgs e)
+        {
+            var tableName = ((System.Data.SqlClient.SqlBulkCopy)sender).DestinationTableName;
+
+            var rowCaount = this.tableRowCounts[tableName];
+            var title = "Kopyalanan kayıt sayısı";
+
+            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+            {
+                LoggerName = ConstantHelper.JobLog,
+                Title = title,
+                Message = title,
+                LogItemProperties = new List<LogItemProperty>() {
+                    new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
+                    new LogItemProperty("ActionName", "BulkCopy"),
+                    new LogItemProperty("TableName", tableName),
+                    new LogItemProperty("BulkCopy_Info", $"Kopyalanan kayıt sayısı: {e.RowsCopied}/{rowCaount}")
+                },
+                LogLevel = LogLevel.Info
+            });
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Quartz.Plugins
 
                 try
                 {
-                    BulkCopyManager.ExecuteQuery(customFormDataModel);
+                    new BulkCopyManager().ExecuteQuery(customFormDataModel);
                 }
                 catch (Exception ex)
                 {

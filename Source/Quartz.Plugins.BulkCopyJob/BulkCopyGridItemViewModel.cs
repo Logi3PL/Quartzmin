@@ -9,5 +9,7 @@ namespace Quartz.Plugins.BulkCopyJob.Models
     {
         public string Name { get; set; }
         public string Action { get; set; }
+
+        public string Where { get; set; }
     }
 }

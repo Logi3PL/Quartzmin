@@ -2,11 +2,16 @@
     <h3>Bulk Copy</h3>
     <section>
         <div>
-            <label for="sourceconnectionstring">Source Connection String</label>
-            <input type="text" id="sourceconnectionstring" />
-            <span></span>
-            <label>Load Tables</label>
-            <input type="button" id="loadTables" value="Load Tables" onclick="loadTableDatas()" />
+            <table>
+                <tr>
+                    <td style="width:100%">
+                        <label for="sourceconnectionstring">Source Connection String</label>
+                        <input type="text" id="sourceconnectionstring" />
+                    </td>
+                    <td><input type="button" style="color:white;background-color:blue;height:45px" id="loadTables" value="Load Tables" onclick="loadTableDatas()" /></td>
+                </tr>
+            </table>
+            
             <span></span>
         </div>
         <div>
@@ -22,7 +27,7 @@
 </div>
 
 <script type="text/javascript">
-    var changedIterms = [];
+    var changedItems = [];
 
     $("#bulkCopyJobFormContainerWizard").steps({
         headerTag: "h3",
@@ -48,14 +53,15 @@
         $.getJSON(url, function (tableJson) {
             var tables = JSON.parse(tableJson);
 
-            if (changedIterms != null && changedIterms != undefined) {
+            if (changedItems != null && changedItems != undefined) {
                 debugger;
 
-                changedIterms.forEach(function(item, index) {
+                changedItems.forEach(function(item) {
                     var rowItem = tables.find(x => x.Name === item.Name);
                     if (rowItem != null && rowItem != undefined) {
 
                         rowItem.Actions = item.Action;
+                        rowItem.Where = item.Where;
                     }
                 });
 
@@ -77,11 +83,28 @@
                 onItemUpdating: function (args) {
                     debugger;
 
-                    changedIterms.push({ Name: args.item.Name, Action:args.item.Actions});
+                    var changedItem = changedItems.find(x => x.Name === args.item.Name);
+
+                    if (changedItem != null && changedItem !=undefined) {
+
+                        if (args.item.Actions == undefined || args.item.Actions == "-1" || args.item.Actions == null) {
+
+                            changedItems.splice( changedItems.indexOf(changedItem), 1 );
+
+                        } else {
+                            changedItem.Action = args.item.Actions;
+                            changedItem.Where = args.item.Where;
+                        }
+
+                    } else {
+                        changedItems.push({ Name: args.item.Name, Action:args.item.Actions,Where:args.item.Where});
+                    }
+
                 },
                 fields: [
                     { name: "Name", type: "text", width: 150,editing: false },
                     { name: "Actions", type: "select", items: tableActions, valueField: "Id", textField: "Action" },
+                    { name: "Where", type: "text", width: 150,editing: true},
                     { name: "-", width: 150,editing: false,title:'<=>' },
                     { type: "control", editButton: true,deleteButton: false}
                 ],
@@ -149,7 +172,7 @@
 
         if (model != null && model != undefined && (model.SourceConnectionString != null && model.SourceConnectionString != undefined)) {
 
-            changedIterms = model.ChangedItems;
+            changedItems = model.ChangedItems;
             loadTableDatas();
         }
     }
@@ -161,7 +184,7 @@
         var destinationConnectionString = $("#destinationconnectionstring").val();
 
         return {
-            SourceConnectionString: sourceConnectionString, DestinationConnectionString: destinationConnectionString, ChangedItems : changedIterms
+            SourceConnectionString: sourceConnectionString, DestinationConnectionString: destinationConnectionString, ChangedItems : changedItems
         };
     }
 </script>
