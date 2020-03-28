@@ -9,6 +9,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
@@ -174,15 +175,61 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
         {
             try
             {
+                Handlebars.RegisterHelper("formatDateTime", (writer, context, parameters) =>
+                {
+                    // parameters : datetime iso string, format, culture
+                    try
+                    {
+                        var firstPrm = parameters[0].ToString();
+
+                        if (firstPrm.ToLower() == "now")
+                        {
+                            firstPrm = DateTime.Now.ToString();
+                        }
+
+                        string res;
+                        DateTime datetime = DateTime.Parse(firstPrm, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                        string format = "dd/MM/yyyy";
+                        if (parameters.Count() > 1)
+                        {
+                            format = parameters[1].ToString();
+                        }
+                        if (parameters.Count() > 2 && !string.IsNullOrWhiteSpace(parameters[2].ToString()))
+                        {
+                            string provider = parameters[2].ToString();
+                            IFormatProvider formatprovider = null;
+                            if (provider.ToLower() == "invariant")
+                            {
+                                formatprovider = CultureInfo.InvariantCulture;
+                            }
+                            else
+                            {
+                                formatprovider = CultureInfo.CreateSpecificCulture(provider);
+                            }
+                            res = datetime.ToString(format, formatprovider);
+                        }
+                        else
+                        {
+                            res = datetime.ToString(format);
+                        }
+
+                        writer.WriteSafeString(res);
+                    }
+                    catch (Exception e)
+                    {
+                        writer.WriteSafeString("");
+                    }
+                });
+
                 #region Get CustomFormDataModel Props
                 var toData = customFormDataModel.To;
-                var subjectData = customFormDataModel.DetailSubject;
+                var subjectData = customFormDataModel.DetailSubject;//Konu
                 var sqlQueryConnectionString = customFormDataModel.SqlQueryConStr;
                 var sqlqueryData = customFormDataModel.SqlQuery;
                 var sqlqueryToFieldData = customFormDataModel.SqlQueryToField;
                 var sqlqueryCcFieldData = customFormDataModel.SqlQueryCcField;
                 var sqlqueryBccFieldData = customFormDataModel.SqlQueryBccField;
-                var headerData = customFormDataModel.DetailHeader;
+                var headerData = customFormDataModel.DetailHeader; //Başlık
                 var footerData = customFormDataModel.DetailFooter;
                 var detailSqlQueryConnectionString = customFormDataModel.DetailSqlQueryConStr;
                 var detailSqlqueryData = customFormDataModel.DetailSqlQuery;
@@ -193,7 +240,21 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var useDetailForEveryoneData = customFormDataModel.DetailBodyForAll == false; //TODO: UI'da ayrı ayrı gönder olarak gösterildigi icin ters kalıyor
                 #endregion
 
+                #region Subject Compile
+                try
+                {
+                    var template = Handlebars.Compile(subjectData);
+
+                    subjectData = template(new { });
+                }
+                catch (Exception ex)
+                {
+                }
+                #endregion
+
                 var bodyContent = bodyData;
+
+                var replacedBodyContent = bodyContent.ToString();
 
                 var listTemplateTokens = new Dictionary<string,string>();
                 var templateTokenRegexMatchRes = Regex.Matches(bodyContent, @"""\[(.*?)]""");
@@ -374,7 +435,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                              return changedStr;
                          };
 
-                        for (int i = 0; i < toDataSource.Rows.Count; i++)
+                        for (int i = 0; i < toDataSource.Rows.Count; i++)  
                         {
                             try
                             {
@@ -406,7 +467,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                 var footerContent = footerData;
                                 var subjectContent = subjectData;
 
-                                var changedBodyContent = bodyContent.ToString();
+                                var changedBodyContent = replacedBodyContent.ToString();
 
                                 #region Initialize Tokens From To Select Query
                                 foreach (var col in toDataSourceColumnNames)
