@@ -439,9 +439,18 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         {
                             try
                             {
-                                var to = toDataSource.Rows[i][toFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                var to = "";
                                 var ccField = "";
                                 var bccField = "";
+
+                                if (string.IsNullOrEmpty(toFormField))
+                                {
+                                    to = toData;
+                                }
+                                else
+                                {
+                                    to = toDataSource.Rows[i][toFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                }
 
                                 if (string.IsNullOrEmpty(ccFormField) == false)
                                 {
@@ -508,6 +517,10 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                         changedBodyContent = changedBodyContent.Replace("\"[FOOTER]\"", footerContent);
 
                                         var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
+
+                                        newSendDataItem.Body = changedBodyContent;
+                                        newSendDataItem.From = sendDataMailAccount.FromMailAddress;
+
                                         await SendDataBy(sendDataMailAccount, newSendDataItem, subjectContent, changedBodyContent, new List<string>() { to }, useDetailForEveryoneData);
                                     }
 

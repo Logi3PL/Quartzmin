@@ -75,7 +75,7 @@ namespace Quartzmin.AspNet
                 StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
                 scheduler = factory.GetScheduler().GetAwaiter().GetResult();
 
-                //scheduler.Start();
+                scheduler.Start();
 
                 if (scheduler.IsStarted)
                 {
