@@ -1,14 +1,28 @@
 ﻿<div id="sendDataJobFormContainerWizard">
     <h3>Send Data</h3>
     <section>
-        <label for="sendDataTo">To</label>
-        <input type="text" id="sendDataTo" />
-        <label for="sendDataCc">Cc</label>
-        <input type="text" id="sendDataCc" />
-        <label for="sendDataBcc">Bcc</label>
-        <input type="text" id="sendDataBcc" />
-        <label for="sendDataReplyTo">ReplyTo</label>
-        <input type="text" id="sendDataReplyTo" />
+        <table>
+            <tr>
+                <td width="400px" >
+                    <label for="sendDataTo">To</label>
+                    <input type="text" id="sendDataTo"/>
+                </td>
+                <td width="400px">
+                    <label for="sendDataReplyTo">ReplyTo</label>
+                    <input type="text" id="sendDataReplyTo" />
+                </td>
+            </tr>
+            <tr>
+                <td width="400px" >
+                    <label for="sendDataCc">Cc</label>
+                    <input type="text" id="sendDataCc"/>
+                </td>
+                <td width="400px">
+                    <label for="sendDataBcc">Bcc</label>
+                    <input type="text" id="sendDataBcc" />
+                </td>
+            </tr>
+        </table>
         <label for="sendDataSqlQuery">Sql Query</label>
         <input type="text" id="sendDataSqlQuery" />
         <label for="sendDataSqlQueryToField">Sql Query To Field</label>
@@ -99,11 +113,12 @@
         $("#sendDataTo").val(model.To);
         $("#sendDataCc").val(model.Cc);
         $("#sendDataBcc").val(model.Bcc);
-        $("#sendDataReplayTo").val(model.ReplayTo);
+        $("#sendDataReplyTo").val(model.ReplyTo);
         $("#sendDataSqlQuery").val(model.SqlQuery);
         $("#sendDataSqlQueryToField").val(model.SqlQueryToField);
         $("#sendDataSqlQueryCcField").val(model.SqlQueryCcField);
         $("#sendDataSqlQueryBccField").val(model.SqlQueryBccField);
+        $("#sendDataSqlQueryReplyToField").val(model.SqlQueryReplyToField);
         $("#sendDataSqlQueryConStr").val(model.SqlQueryConStr);
         $("#sendDataDetailSubject").val(model.DetailSubject);
         $("#sendDataDetailHeader").val(model.DetailHeader);
