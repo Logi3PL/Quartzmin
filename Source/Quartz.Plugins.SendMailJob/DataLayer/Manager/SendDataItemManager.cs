@@ -176,10 +176,15 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
             {
                 #region Get CustomFormDataModel Props
                 var toData = customFormDataModel.To;
+                var ccData = customFormDataModel.Cc;
+                var bccData = customFormDataModel.Bcc;
+                var replyToData = customFormDataModel.ReplyTo;
+
                 var subjectData = customFormDataModel.DetailSubject;
                 var sqlQueryConnectionString = customFormDataModel.SqlQueryConStr;
                 var sqlqueryData = customFormDataModel.SqlQuery;
                 var sqlqueryToFieldData = customFormDataModel.SqlQueryToField;
+                var sqlqueryReplyToFieldData = customFormDataModel.SqlQueryReplyToField;
                 var sqlqueryCcFieldData = customFormDataModel.SqlQueryCcField;
                 var sqlqueryBccFieldData = customFormDataModel.SqlQueryBccField;
                 var headerData = customFormDataModel.DetailHeader;
@@ -187,9 +192,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                 var detailSqlQueryConnectionString = customFormDataModel.DetailSqlQueryConStr;
                 var detailSqlqueryData = customFormDataModel.DetailSqlQuery;
                 var useSendDataDetailQueryForTemplateData = customFormDataModel.DetailQueryForTemplate;
-                var ccData = customFormDataModel.Cc;
                 var bodyData = customFormDataModel.DetailContent;
-                var bccData = customFormDataModel.Bcc;
                 var useDetailForEveryoneData = customFormDataModel.DetailBodyForAll;
                 #endregion
 
@@ -216,6 +219,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                 sendDataItem.Bcc = bccData;
                 sendDataItem.Cc = ccData;
+                sendDataItem.ReplyTo = replyToData;
 
                 sendDataItem.Type = 1; //TODO:Static - Email/Sms
 
@@ -343,6 +347,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         var toFormField = sqlqueryToFieldData?.Trim();
                         var ccFormField = sqlqueryCcFieldData?.Trim();
                         var bccFormField = sqlqueryBccFieldData?.Trim();
+                        var replyToFormField = sqlqueryReplyToFieldData?.Trim();
 
                         recipients = new List<string>();
 
@@ -378,28 +383,27 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         {
                             try
                             {
-                                var to = toDataSource.Rows[i][toFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                var to = toDataSource.Rows[i][toFormField.Replace("[","").Replace("]", "")]?.ToString().Trim().Replace("[", "").Replace("]", "");
                                 var ccField = "";
                                 var bccField = "";
+                                var replyToField = "";
 
                                 if (string.IsNullOrEmpty(ccFormField) == false)
                                 {
-                                    ccField = toDataSource.Rows[i][ccFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                    ccField = toDataSource.Rows[i][ccFormField.Replace("[", "").Replace("]", "")]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                    sendDataItem.Cc = ccField;
                                 }
 
                                 if (string.IsNullOrEmpty(bccFormField) == false)
                                 {
-                                    bccField = toDataSource.Rows[i][bccFormField]?.ToString().Trim().Replace("[", "").Replace("]", "");
-                                }
-                                
-                                if (string.IsNullOrEmpty(sendDataItem.Cc) && string.IsNullOrEmpty(ccField) == false)
-                                {
-                                    sendDataItem.Cc = ccField;
+                                    bccField = toDataSource.Rows[i][bccFormField.Replace("[", "").Replace("]", "")]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                    sendDataItem.Bcc = bccField;
                                 }
 
-                                if (string.IsNullOrEmpty(sendDataItem.Bcc) && string.IsNullOrEmpty(bccField) == false)
+                                if (string.IsNullOrEmpty(replyToFormField) == false)
                                 {
-                                    sendDataItem.Bcc = bccField;
+                                    replyToField = toDataSource.Rows[i][replyToFormField.Replace("[", "").Replace("]", "")]?.ToString().Trim().Replace("[", "").Replace("]", "");
+                                    sendDataItem.ReplyTo = replyToField;
                                 }
 
                                 var headerContent = headerData;
@@ -449,7 +453,6 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                                         var newSendDataItem = JsonConvert.DeserializeObject<SendDataItem>(JsonConvert.SerializeObject(sendDataItem));
                                         await SendDataBy(sendDataMailAccount, newSendDataItem, subjectContent, changedBodyContent, new List<string>() { to }, useDetailForEveryoneData);
                                     }
-
                                 }
                             }
                             catch (Exception exFor)
@@ -563,7 +566,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         
                     }
 
-                    foreach (var ccItem in sendDataItem.Cc.Split(new[] { ";" },StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var ccItem in sendDataItem.Cc.Replace(";", ",").Split(new[] { "," },StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (string.IsNullOrEmpty(ccItem.Trim()) == false)
                         {
@@ -571,7 +574,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         }
                     }
 
-                    foreach (var bccItem in sendDataItem.Bcc.Split(new[] { ";" }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var bccItem in sendDataItem.Bcc.Replace(";", ",").Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (string.IsNullOrEmpty(bccItem.Trim()) == false)
                         {
@@ -579,10 +582,13 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         }
                     }
 
-                    //if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
-                    //{
-                    //    mail.Bcc.Add(sendDataItem.Bcc);
-                    //}
+                    foreach (var replyToItem in sendDataItem.ReplyTo.Replace(";", ",").Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        if (string.IsNullOrEmpty(replyToItem.Trim()) == false)
+                        {
+                            mail.ReplyToList.Add(replyToItem.Trim());
+                        }
+                    }
 
                     mail.Subject = subject;
                     mail.Body = bodyContent;

@@ -10,8 +10,10 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Model
         public string To { get; set; }
         public string Cc { get; set; }
         public string Bcc { get; set; }
+        public string ReplyTo { get; set; }
         public string SqlQuery { get; set; }
         public string SqlQueryToField { get; set; }
+        public string SqlQueryReplyToField { get; set; }
         public string SqlQueryCcField { get; set; }
         public string SqlQueryBccField { get; set; }
         public string SqlQueryConStr { get; set; }

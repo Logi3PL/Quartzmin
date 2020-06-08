@@ -18,6 +18,7 @@ namespace Quartz.Plugins.SendMailJob.DataLayer.Model
         public string Recipient { get; set; }
         public string Cc { get; set; }
         public string Bcc { get; set; }
+        public string ReplyTo { get; set; }
         public string Body { get; set; }
         public DateTimeOffset? SentDate { get; set; }
         public string ErrorMsg { get; set; }
