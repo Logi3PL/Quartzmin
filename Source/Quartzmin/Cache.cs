@@ -30,7 +30,8 @@ namespace Quartzmin
                             var knownTypes = new List<string>() {
                                 "Quartz.Plugins.SendMailJobDefinition, Quartz.Plugins.SendMailJob",
                                 "Quartz.Plugins.WebApiCallJobDefinition, Quartz.Plugins.WebApiCallJob",
-                                "Quartz.Plugins.ScriptExecuterJobDefinition, Quartz.Plugins.ScriptExecuterJob"
+                                "Quartz.Plugins.ScriptExecuterJobDefinition, Quartz.Plugins.ScriptExecuterJob",
+                                "Quartz.Plugins.BulkCopyDefinition, Quartz.Plugins.BulkCopyJob"
                             };
                             foreach (var key in keys)
                             {

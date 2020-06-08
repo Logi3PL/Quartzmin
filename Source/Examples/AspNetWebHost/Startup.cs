@@ -1,4 +1,7 @@
 ﻿using Microsoft.Owin;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using Owin;
 using Quartz;
 using Quartz.Impl;
@@ -7,6 +10,9 @@ using Slf;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Net.Http.Formatting;
+using System.Net.Http.Headers;
+using System.Web.Http;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -16,6 +22,30 @@ namespace Quartzmin.AspNet
     {
         public void Configuration(IAppBuilder app)
         {
+            //var config = new HttpConfiguration();
+
+            //var defaultSettings = new JsonSerializerSettings
+            //{
+            //    Formatting = Formatting.Indented,
+            //    //ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            //    //Converters = new List<JsonConverter>
+            //    //        {
+            //    //            new StringEnumConverter{ CamelCaseText = true },
+            //    //        }
+            //};
+
+            //JsonConvert.DefaultSettings = () => { return defaultSettings; };
+
+            //config.Formatters.Clear();
+            //config.Formatters.Add(new JsonMediaTypeFormatter());
+            //config.Formatters.JsonFormatter.SerializerSettings = defaultSettings;
+
+            //config.Routes.MapHttpRoute("test", "{controller}/{id}");
+            //config.MapHttpAttributeRoutes();
+
+            //app.UseWebApi(config);
+
+
             IScheduler scheduler = null;
             var conStr = ConfigurationManager.ConnectionStrings["QUARTZNETJOBDB"]?.ConnectionString;
             try
@@ -45,7 +75,7 @@ namespace Quartzmin.AspNet
                 StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
                 scheduler = factory.GetScheduler().GetAwaiter().GetResult();
 
-                //scheduler.Start();
+                scheduler.Start();
 
                 if (scheduler.IsStarted)
                 {

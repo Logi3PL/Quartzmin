@@ -114,6 +114,7 @@
     <Compile Include="..\Shared\DemoScheduler.cs">
       <Link>DemoScheduler.cs</Link>
     </Compile>
+    <Compile Include="Controller\BulkCopyApiController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -131,6 +132,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Quartz.Plugins.BulkCopyJob\Quartz.Plugins.BulkCopyJob.csproj">
+      <Project>{ff0bf690-51e1-43ff-8629-8f0433cf4972}</Project>
+      <Name>Quartz.Plugins.BulkCopyJob</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Quartz.Plugins.RecentHistory\Quartz.Plugins.RecentHistory.csproj">
       <Project>{43c177e2-88fb-47cd-abb3-4a229b969609}</Project>
       <Name>Quartz.Plugins.RecentHistory</Name>

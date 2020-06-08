@@ -133,9 +133,17 @@
     <None Include="Quartzmin.TopshelfHost_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Quartz.Plugins.BulkCopyJob\Quartz.Plugins.BulkCopyJob.csproj">
+      <Project>{ff0bf690-51e1-43ff-8629-8f0433cf4972}</Project>
+      <Name>Quartz.Plugins.BulkCopyJob</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Quartz.Plugins.RecentHistory\Quartz.Plugins.RecentHistory.csproj">
       <Project>{43c177e2-88fb-47cd-abb3-4a229b969609}</Project>
       <Name>Quartz.Plugins.RecentHistory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Quartz.Plugins.ScriptExecuterJob\Quartz.Plugins.ScriptExecuterJob.csproj">
+      <Project>{fd93c87c-ae3a-493c-b226-16cf55877455}</Project>
+      <Name>Quartz.Plugins.ScriptExecuterJob</Name>
     </ProjectReference>
     <ProjectReference Include="..\Quartz.Plugins.SendMailJob\Quartz.Plugins.SendMailJob.csproj">
       <Project>{06e70b09-2ff5-4d39-9e2b-f377498eaff0}</Project>
