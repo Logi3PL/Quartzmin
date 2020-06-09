@@ -667,27 +667,36 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
 
                     }
 
-                    foreach (var ccItem in sendDataItem.Cc.Replace(";", ",").Trim().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+                    if (string.IsNullOrEmpty(sendDataItem.Cc) == false)
                     {
-                        if (string.IsNullOrEmpty(ccItem.Trim()) == false)
+                        foreach (var ccItem in sendDataItem.Cc.Replace(";", ",").Trim().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            mail.CC.Add(ccItem.Trim());
+                            if (string.IsNullOrEmpty(ccItem.Trim()) == false)
+                            {
+                                mail.CC.Add(ccItem.Trim());
+                            }
                         }
                     }
 
-                    foreach (var bccItem in sendDataItem.Bcc.Replace(";", ",").Trim().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+                    if (string.IsNullOrEmpty(sendDataItem.Bcc) == false)
                     {
-                        if (string.IsNullOrEmpty(bccItem.Trim()) == false)
+                        foreach (var bccItem in sendDataItem.Bcc.Replace(";", ",").Trim().Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            mail.Bcc.Add(bccItem.Trim());
+                            if (string.IsNullOrEmpty(bccItem.Trim()) == false)
+                            {
+                                mail.Bcc.Add(bccItem.Trim());
+                            }
                         }
                     }
 
-                    foreach (var replyToItem in sendDataItem.ReplyTo.Replace(";", ",").Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
+                    if (string.IsNullOrEmpty(sendDataItem.ReplyTo) == false)
                     {
-                        if (string.IsNullOrEmpty(replyToItem.Trim()) == false)
+                        foreach (var replyToItem in sendDataItem.ReplyTo.Replace(";", ",").Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
                         {
-                            mail.ReplyToList.Add(replyToItem.Trim());
+                            if (string.IsNullOrEmpty(replyToItem.Trim()) == false)
+                            {
+                                mail.ReplyToList.Add(replyToItem.Trim());
+                            }
                         }
                     }
 
