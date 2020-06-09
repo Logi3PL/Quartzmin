@@ -89,8 +89,16 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                         command.Parameters.AddWithValue("@RECIPIENTLIST", sendDataDetail.Recipient);
                         command.Parameters.AddWithValue("@CC", sendDataDetail.Cc);
                         command.Parameters.AddWithValue("@BCC", sendDataDetail.Bcc);
-                        command.Parameters.AddWithValue("@REPLYTO", sendDataDetail.ReplyTo);
                         command.Parameters.AddWithValue("@BODY", sendDataDetail.Body);
+
+                        if (string.IsNullOrEmpty(sendDataDetail.ReplyTo) == false)
+                        {
+                            command.Parameters.AddWithValue("@REPLYTO", sendDataDetail.ReplyTo);
+                        }
+                        else
+                        {
+                            command.Parameters.AddWithValue("@REPLYTO", DBNull.Value);
+                        }
 
                         if (sendDataDetail.SentDate.HasValue)
                         {
