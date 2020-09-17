@@ -75,7 +75,7 @@ namespace Quartzmin.AspNet
                 StdSchedulerFactory factory = new StdSchedulerFactory(configuration);
                 scheduler = factory.GetScheduler().GetAwaiter().GetResult();
 
-                scheduler.Start();
+                //scheduler.Start();
 
                 if (scheduler.IsStarted)
                 {
@@ -129,7 +129,7 @@ namespace Quartzmin.AspNet
                 app.UseQuartzmin(new QuartzminOptions()
                 {
                     Scheduler = scheduler,
-                    VirtualPathRoot = "/test",
+                    VirtualPathRoot = "/",
                     DefaultDateFormat = "dd.MM.yyyy"
                 });
             }
