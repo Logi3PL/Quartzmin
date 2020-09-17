@@ -646,7 +646,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     {
                         if (string.IsNullOrEmpty(ccItem.Trim()) == false)
                         {
-                            mail.CC.Add(ccItem.Trim());
+                            mail.CC.Add(new MailAddress(ccItem.Trim()));
                         }
                     }
 
@@ -654,7 +654,7 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
                     {
                         if (string.IsNullOrEmpty(bccItem.Trim()) == false)
                         {
-                            mail.Bcc.Add(bccItem.Trim());
+                            mail.Bcc.Add(new MailAddress(bccItem.Trim()));
                         }
                     }
 

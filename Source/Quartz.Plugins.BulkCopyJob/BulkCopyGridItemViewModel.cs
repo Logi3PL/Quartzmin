@@ -11,5 +11,6 @@ namespace Quartz.Plugins.BulkCopyJob.Models
         public string Action { get; set; }
 
         public string Where { get; set; }
+        public string Target { get; set; }
     }
 }

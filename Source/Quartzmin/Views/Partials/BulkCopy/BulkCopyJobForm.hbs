@@ -2,32 +2,63 @@
     <h3>Bulk Copy</h3>
     <section>
         <div>
-            <table>
-                <tr>
-                    <td style="width:100%">
-                        <label for="sourceconnectionstring">Source Connection String</label>
-                        <input type="text" id="sourceconnectionstring" />
-                    </td>
-                    <td><input type="button" style="color:white;background-color:blue;height:45px" id="loadTables" value="Load Tables" onclick="loadTableDatas()" /></td>
-                </tr>
-            </table>
-            
+            <ul id="tabs">
+                <li><a id="mssql">DB (MSSQL)</a></li>
+                <li><a id="webapi">WEB API</a></li>
+            </ul>
+            <div class="bulkcopy">
+                <div class="container" id="mssql_c">
+                    <table>
+                        <tr>
+                            <td style="width:100%">
+                                <label for="sourceconnectionstring">Source Connection String</label>
+                                <input type="text" id="sourceconnectionstring" />
+                            </td>
+                            <td><input type="button" style="color:white;background-color:blue;height:45px" id="loadTables" value="Load Tables" onclick="loadTableDatas()" /></td>
+                        </tr>
+                    </table>
+                    <div>
+                        <div id="jsGrid"></div>
+                        <table id="grid"></table>
+                    </div>
+                </div>
+                <div class="container" id="webapi_c">
+                    {{>WebApiCall/WebApiCallJobFormForBulkCopy ID='ForBulkCopy'}}
+                </div>
+            </div>
+            <div>
+                <label for="destinationconnectionstring">Destination Connection String</label>
+                <input type="text" id="destinationconnectionstring" />
+                <span></span>
+            </div>
             <span></span>
-        </div>
-        <div>
-            <label for="destinationconnectionstring">Destination Connection String</label>
-            <input type="text" id="destinationconnectionstring" />
-            <span></span>
-        </div>
-        <div>
-            <div id="jsGrid"></div>
-            <table id="grid"></table>
         </div>
     </section>
 </div>
 
 <script type="text/javascript">
     var changedItems = [];
+    
+    $(function () {
+
+
+        $('#tabs li a:not(:first)').addClass('inactive');
+        $('.bulkcopy .container').hide();
+        $('.bulkcopy .container:first').show();
+
+        $('#tabs li a').click(function () {
+            var t = $(this).attr('id');
+            if ($(this).hasClass('inactive')) { //this is the start of our condition 
+                $('#tabs li a').addClass('inactive');
+                $(this).removeClass('inactive');
+
+                $('.bulkcopy .container').hide();
+                $('#' + t + '_c').fadeIn('slow');
+            }
+        });
+
+    });
+
 
     $("#bulkCopyJobFormContainerWizard").steps({
         headerTag: "h3",
@@ -62,6 +93,7 @@
 
                         rowItem.Actions = item.Action;
                         rowItem.Where = item.Where;
+                        rowItem.Target = item.Target;
                     }
                 });
 
@@ -72,7 +104,7 @@
 
             $("#jsGrid").jsGrid({
                 width: "100%",
-                height: "400px",
+                height: "290px",
 
                 inserting: false,
                 editing: true,
@@ -82,30 +114,36 @@
                 data: tables,
                 onItemUpdating: function (args) {
                     debugger;
+                    if (args.item.Type == 'View' && (args.item.Target == '' || args.item.Target == undefined)) {
+                        args.cancel = true;
+                        alert('View seçildiğinde Target değeri girilmelidir ...');
+                    } else {
+                        var changedItem = changedItems.find(x => x.Name === args.item.Name);
 
-                    var changedItem = changedItems.find(x => x.Name === args.item.Name);
+                        if (changedItem != null && changedItem != undefined) {
 
-                    if (changedItem != null && changedItem !=undefined) {
+                            if (args.item.Actions == undefined || args.item.Actions == "-1" || args.item.Actions == null) {
 
-                        if (args.item.Actions == undefined || args.item.Actions == "-1" || args.item.Actions == null) {
+                                changedItems.splice(changedItems.indexOf(changedItem), 1);
 
-                            changedItems.splice( changedItems.indexOf(changedItem), 1 );
+                            } else {
+                                changedItem.Action = args.item.Actions;
+                                changedItem.Where = args.item.Where;
+                                changedItem.Target = args.item.Target;
+                            }
 
                         } else {
-                            changedItem.Action = args.item.Actions;
-                            changedItem.Where = args.item.Where;
+                            changedItems.push({ Name: args.item.Name, Action: args.item.Actions, Where: args.item.Where, Target: args.item.Target });
                         }
 
-                    } else {
-                        changedItems.push({ Name: args.item.Name, Action:args.item.Actions,Where:args.item.Where});
                     }
-
                 },
                 fields: [
-                    { name: "Name", type: "text", width: 150,editing: false },
+                    { name: "Type", type: "text", width: 80, editing: false },
+                    { name: "Name", type: "text", width: 200, editing: false },
                     { name: "Actions", type: "select", items: tableActions, valueField: "Id", textField: "Action" },
                     { name: "Where", type: "text", width: 150,editing: true},
-                    { name: "-", width: 150,editing: false,title:'<=>' },
+                    { name: "Target", width: 150, title: 'Target', type: "text", editing: true},
                     { type: "control", editButton: true,deleteButton: false}
                 ],
                 //rowRenderer: function(item) {
@@ -193,5 +231,6 @@
 <link type="text/css" rel="stylesheet" href="Content/Scripts/jsgrid/jsgrid-theme.min.css" />
 <script src="Content/Scripts/jquery.steps.min.js"></script>
 <link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />
+<link rel="stylesheet" href="Content/Tab.css" type="text/css" />
 
 

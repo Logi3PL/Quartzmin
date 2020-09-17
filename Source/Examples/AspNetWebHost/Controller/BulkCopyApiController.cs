@@ -19,7 +19,7 @@ namespace Quartz.Plugins.BulkCopyJob.Controller
             using (SqlConnection con = new SqlConnection(conString))
             {
                 con.Open();
-                using (SqlCommand cmd = new SqlCommand("SELECT  name FROM  SYSOBJECTS WHERE  xtype = 'U'", con))
+                using (SqlCommand cmd = new SqlCommand("SELECT  case xtype when 'U' then 'Table' else 'View' end as xtype,name FROM  SYSOBJECTS WHERE  xtype IN ( 'U','V ')", con))
                 { //List<string> tables = new List<string>();  
                     SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable("Tables");
@@ -28,7 +28,8 @@ namespace Quartz.Plugins.BulkCopyJob.Controller
 
                     foreach (DataRow row in dt.Rows)
                     {
-                        string tablename = (string)row[0];
+                        string tabletype = (string)row[0];
+                        string tablename = (string)row[1];
 
                         using (SqlCommand clmCmd = new SqlCommand($@"SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE
 FROM INFORMATION_SCHEMA.COLUMNS
@@ -47,7 +48,7 @@ WHERE TABLE_NAME = N'{tablename}'", con))
                                 clmList.Add(new { Selected = false, Name = (string)clmRow[0], Type = (string)clmRow[1], IsNullable = (string)clmRow[2] });
                             }
 
-                            list.Add(new { Selected = false, Name = tablename, Columns = clmList });
+                            list.Add(new { Selected = false, Type = tabletype, Name = tablename, Columns = clmList });
                         }
                     }
                 }

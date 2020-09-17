@@ -44,6 +44,11 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                     {
                         var tableName = item.Name;
 
+                        if (string.IsNullOrEmpty(item.Target) == false)
+                        {
+                            tableName = item.Target;
+                        }
+
                         #region Check Exist
                         try
                         {
@@ -51,7 +56,7 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                             if (ConstantHelper.TableActions.TruncateAdd == item.Action)
                             {
                                 // checking whether the table selected from the dataset exists in the database or not
-                                var checkTableIfExistsCommand = new SqlCommand("IF EXISTS (SELECT 1 FROM sysobjects WHERE name =  '" + tableName + "') SELECT 1 ELSE SELECT 0", destConnection);
+                                var checkTableIfExistsCommand = new SqlCommand("IF EXISTS (SELECT 1 FROM sysobjects WHERE name =  '" + tableName + "' and  xtype = 'U') SELECT 1 ELSE SELECT 0", destConnection);
                                 var exists = checkTableIfExistsCommand.ExecuteScalar().ToString().Equals("1");
 
                                 // if does not exist
@@ -61,7 +66,7 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                                     createTableBuilder.AppendLine("(");
 
                                     SqlDataAdapter sqlDataAdapterClmn = new SqlDataAdapter($@"SELECT name, system_type_name, is_nullable FROM
-  sys.dm_exec_describe_first_result_set('select * from {tableName}', NULL, 0)", sourceConnection);
+  sys.dm_exec_describe_first_result_set('select * from {item.Name}', NULL, 0)", sourceConnection);
                                     DataTable clmDt = new DataTable("Columns");
 
                                     sqlDataAdapterClmn.Fill(clmDt);
@@ -134,9 +139,9 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                                 }
                             }
 
-                            SqlCommand myCommand = new SqlCommand($"SELECT * FROM {tableName} {whereClause}", sourceConnection);
+                            SqlCommand myCommand = new SqlCommand($"SELECT * FROM {item.Name} {whereClause}", sourceConnection);
 
-                            SqlCommand myRowCommand = new SqlCommand($"SELECT count(*) FROM {tableName} {whereClause}", sourceConnection);
+                            SqlCommand myRowCommand = new SqlCommand($"SELECT count(*) FROM {item.Name} {whereClause}", sourceConnection);
                             var rowCount = myRowCommand.ExecuteScalar()?.ToString();
 
                             tableRowCounts[tableName] = rowCount;

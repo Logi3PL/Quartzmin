@@ -1,0 +1,81 @@
+﻿<div id="webApiCallJobFormForBulkCopyContainerWizard">
+    <h3>Web Api Call</h3>
+    <section>
+        <label for="webApiCallUrl">Url}</label>
+        <input type="text" id="webApiCallUrlForBulkCopy" />
+        <span></span>
+        <label for="httpmethodForBulkCopy">Http Method</label>
+        <select class="ui fluid dropdown allow-empty" id="httpmethodForBulkCopy">
+            <option value="">--- Not Set ---</option>
+            <option value="get">Get</option>
+            <option value="post">Post</option>
+            <option value="put">Put</option>
+            <option value="delete">Delete</option>
+        </select>
+        <span></span>
+        <label for="webApiCallHttpMethodPrmTypForBulkCopy">Parameter Send Type</label>
+        <select class="ui fluid dropdown allow-empty" id="webapicallhttpmethodprmtypForBulkCopy">
+            <option value="">--- Not Set ---</option>
+            <option value="url">Url</option>
+            <option value="body">Body</option>
+        </select>
+        <span></span>
+        <label for="webApiCallHttpMethodCntTypForBulkCopy">Content Type</label>
+        <select class="ui fluid dropdown allow-empty" id="webApiCallHttpMethodCntTypForBulkCopy">
+            <option value="">--- Not Set ---</option>
+            <option value="application/json">JSON</option>
+            <option value="text/plain">Text</option>
+            <option value="text/html">Html</option>
+        </select>
+        <span></span>
+        <label for="webApiCallHttpMethodParamForBulkCopy">Parameters</label>
+        <textarea id="webApiCallHttpMethodParamForBulkCopy" cols="40" rows="5" style="resize: none;height:50px"></textarea>
+        <span></span>
+        <label for="webapicallhttpmethodhdrForBulkCopy">Headers</label>
+        <textarea id="webApiCallHttpMethodHeaderForBulkCopy" cols="40" rows="5" style="resize: none;height:50px"></textarea>
+    </section>
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+
+        $("#webApiCallJobFormForBulkCopyContainerWizard").steps({
+            headerTag: "h3",
+            bodyTag: "section",
+            transitionEffect: "slideLeft",
+            autoFocus: true,
+            enableFinishButton: false,
+            titleTemplate: '#title#',
+            onInit: function (event, current) {
+                $('.actions > ul > li:first-child').attr('style', 'display:none');
+            }
+        });
+
+    })
+
+    function SetDataForWebApiCallForBulkCopy(model) {
+        $("#webApiCallUrlForBulkCopy").val(model.WebApiCallUrl);
+        $("#httpmethodForBulkCopy").val(model.HttpMethod);
+        $("#webapicallhttpmethodprmtypForBulkCopy").val(model.HttpMethodParamType);
+        $("#webApiCallHttpMethodCntTypForBulkCopy").val(model.HttpMethodContentType);
+        $("#webApiCallHttpMethodParamForBulkCopy").val(model.HttpMethodParameter);
+        $("#webApiCallHttpMethodHeaderForBulkCopy").val(model.HttpMethodHeader);
+    }
+
+    function GetDataForWebApiCallForBulkCopy() {
+        var webApiCallUrl = $("#webApiCallUrlForBulkCopy").val();
+        var httpMethod = $("#httpmethodForBulkCopy").val();
+        var httpMethodParamType = $("#webapicallhttpmethodprmtypForBulkCopy").val();
+        var httpMethodContentType = $("#webApiCallHttpMethodCntTypForBulkCopy").val();
+        var httpMethodParameter = $("#webApiCallHttpMethodParamForBulkCopy").val();
+        var httpMethodHeader = $("#webApiCallHttpMethodHeaderForBulkCopy").val();
+
+        return {
+            WebApiCallUrl: webApiCallUrl, HttpMethod: httpMethod, HttpMethodParamType: httpMethodParamType,
+            HttpMethodContentType: httpMethodContentType, HttpMethodHeader: httpMethodHeader, HttpMethodParameter: httpMethodParameter
+        };
+    }
+</script>
+<!--<script src="Content/Scripts/jquery.steps.min.js"></script>
+<link rel="stylesheet" href="Content/jquery.steps.css" type="text/css" />-->

@@ -160,10 +160,12 @@
 
   <ItemGroup>
     <None Remove="Content\jquery.steps.css" />
+    <None Remove="Content\Tab.css" />
     <None Remove="Views\Partials\BulkCopy\BulkCopyJobForm.hbs" />
     <None Remove="Views\Partials\ExecuteScript\ExecuteScriptJobForm.hbs" />
     <None Remove="Views\Partials\SendData\SendDataJobForm.hbs" />
     <None Remove="Views\Partials\WebApiCall\WebApiCallJobForm.hbs" />
+    <None Remove="Views\Partials\WebApiCall\WebApiCallJobFormForBulkCopy.hbs" />
   </ItemGroup>
 
 </Project>
