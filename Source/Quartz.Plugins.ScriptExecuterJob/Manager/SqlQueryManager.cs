@@ -23,15 +23,57 @@ namespace Quartz.Plugins.ScriptExecuterJob.DataLayer.Manager
                     {
                         connectionQueryData.Open();
                     }
-                    
-                    #region Execute Command
-                    using (SqlCommand command = new SqlCommand(executeQuery, connectionQueryData))
-                    {
-                        executeResult = command.ExecuteNonQuery();
 
-                        returnValue = true;
+                    try
+                    {
+                        int count = 0;
+                        SqlCommand command = new SqlCommand(executeQuery, connectionQueryData);
+
+                        IAsyncResult result = command.BeginExecuteNonQuery();
+                        while (!result.IsCompleted)
+                        {
+                            Console.WriteLine("Waiting ({0})", count++);
+                            System.Threading.Thread.Sleep(50);
+                        }
+                        Console.WriteLine("Command complete. Affected {0} rows.",
+                            command.EndExecuteNonQuery(result));
                     }
-                    #endregion
+                    catch (SqlException exInr)
+                    {
+                        LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+                        {
+                            LoggerName = ConstantHelper.JobLog,
+                            Title = "ExecuteQuery Error",
+                            Message = exInr.Message,
+                            LogItemProperties = new List<LogItemProperty>() {
+                                new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
+                                new LogItemProperty("ActionName", "ExecuteQuery"),
+                                new LogItemProperty("ExecuteResult", executeResult),
+                                new LogItemProperty("ExecuteQuery", executeQuery)
+                            },
+                            LogLevel = LogLevel.Error,
+                            Exception = exInr
+                        });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine("Error: {0}", ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        // You might want to pass these errors
+                        // back out to the caller.
+                        Console.WriteLine("Error: {0}", ex.Message);
+                    }
+
+                    //#region Execute Command
+                    //using (SqlCommand command = new SqlCommand(executeQuery, connectionQueryData))
+                    //{
+                    //    executeResult = command.ExecuteNonQuery();
+
+                    //    returnValue = true;
+                    //}
+                    //#endregion
 
                     try
                     {
