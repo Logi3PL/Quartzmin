@@ -14,29 +14,117 @@ namespace SelfHosting.Repository
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            //Fluent Api ile Entitylerimiz arasındaki ORM ilişkisini kod içerisinde gerçekleştiriyoruz.
+            modelBuilder.Entity<Job>(entity =>
+            {
+                entity.ToTable("JMS_JOB");
 
-            modelBuilder.Entity<Customer>().ToTable("JMS_CUSTOMER")
-                .HasMany(x => x.CustomerJobs)
-                .WithOne(y => y.Customer);
+                entity.HasKey(e => e.Id);
 
-            modelBuilder.Entity<Job>().ToTable("JMS_JOB")
-                .HasMany(x => x.CustomerJobs)
-                .WithOne(y => y.Job);
+                entity.HasMany(x => x.CustomerJobs).WithOne(y => y.Job);
 
+                entity.Property(e => e.Id).HasColumnName("ID");
 
-            modelBuilder.Entity<CustomerJob>().ToTable("JMS_CUSTOMERJOB")
-        .HasKey(cj => new { cj.CustomerId, cj.JobId });
-            modelBuilder.Entity<CustomerJob>()
-                .HasOne(c => c.Customer)
+                entity.Property(e => e.Name).HasColumnName("NAME");
+
+                entity.Property(e => e.Description)
+                    .HasColumnName("DESCRIPTION")
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.Active)
+                    .HasColumnName("ACTIVE")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("CREATEDBY");
+
+                entity.Property(e => e.CreatedTime)
+                    .HasColumnName("CREATEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("MODIFIEDBY").IsRequired(false);
+
+                entity.Property(e => e.ModifiedTime).IsRequired(false)
+                    .HasColumnName("MODIFIEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+            });
+
+            modelBuilder.Entity<Customer>(entity =>
+            {
+                entity.ToTable("JMS_CUSTOMER");
+
+                entity.HasMany(x => x.CustomerJobs).WithOne(y => y.Customer);
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.CustomerName).HasColumnName("CUSTOMERNAME");
+                entity.Property(e => e.CustomerCode).HasColumnName("CUSTOMERCODE");
+
+                entity.Property(e => e.Active)
+                    .HasColumnName("ACTIVE")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("CREATEDBY");
+
+                entity.Property(e => e.CreatedTime)
+                    .HasColumnName("CREATEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.Description)
+                    .HasColumnName("DESCRIPTION")
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("MODIFIEDBY").IsRequired(false);
+
+                entity.Property(e => e.ModifiedTime).IsRequired(false)
+                    .HasColumnName("MODIFIEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+            });
+
+            modelBuilder.Entity<CustomerJob>(entity =>
+            {
+                entity.ToTable("JMS_CUSTOMERJOB");
+
+                entity.HasKey(cj => cj.Id);
+
+                entity.HasOne(c => c.Customer)
                 .WithMany(b => b.CustomerJobs)
-                .HasForeignKey(c => c.CustomerId);
+                .HasForeignKey(c => c.CustomerId); 
 
-            modelBuilder.Entity<CustomerJob>().ToTable("JMS_CUSTOMERJOB")
-                .HasOne(bc => bc.Job)
+                entity.HasOne(bc => bc.Job)
                 .WithMany(c => c.CustomerJobs)
                 .HasForeignKey(j => j.JobId);
 
+                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.Property(e => e.CustomerId).HasColumnName("CUSTOMERID");
+                entity.Property(e => e.JobId).HasColumnName("JOBID");
+                entity.Property(e => e.Cron).HasColumnName("CRON").HasMaxLength(1000);
+
+                entity.Property(e => e.Active)
+                    .HasColumnName("ACTIVE")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("CREATEDBY");
+
+                entity.Property(e => e.CreatedTime)
+                    .HasColumnName("CREATEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("MODIFIEDBY").IsRequired(false);
+
+                entity.Property(e => e.ModifiedTime).IsRequired(false)
+                    .HasColumnName("MODIFIEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+            });
 
             base.OnModelCreating(modelBuilder);
         }

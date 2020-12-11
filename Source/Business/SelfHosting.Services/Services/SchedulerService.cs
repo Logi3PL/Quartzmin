@@ -162,8 +162,11 @@ namespace SelfHosting.Services
                     JobDataMap jobdataMap = new JobDataMap();
 
                     // Job parametrelerini Execute Scheduler'a parametre olarak geçiyoruz. Execute tetiklendiğinde kullanabilmek için 
-                    jobdataMap.Add("BaseUrl", customerJob.Job.BaseUrl);
-                    jobdataMap.Add("EndPoint", customerJob.Job.EndPoint);
+
+                    //TODO ???
+                    //jobdataMap.Add("BaseUrl", customerJob.Job.BaseUrl);
+                    //jobdataMap.Add("EndPoint", customerJob.Job.EndPoint);
+
                     jobdataMap.Add("SchedulerJobName", customerJob.Job.Name);
                     jobdataMap.Add("SchedulerJobPathRoot", root);
 
