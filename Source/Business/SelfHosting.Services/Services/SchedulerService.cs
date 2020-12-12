@@ -175,11 +175,16 @@ namespace SelfHosting.Services
                     /*Uniq oluşturduğumuz keyleri burada kullanıyoruz ve Build ile Joblarımızı çalıştıracak olan JobExecuter sınıfını
                     ayağa kaldırıyoruz. */
 
-                    ITrigger jobTrigger = TriggerBuilder.Create()
+                    var triggerBuilder = TriggerBuilder.Create()
                            .WithIdentity(jobName, jobGroup)
-                           .UsingJobData(jobdataMap) //Trigger'ımıza parametreleri veriyoruz.
-                       .WithCronSchedule(customerJob.Cron) //Zamanlayıcımızı Trigger içerisinde belirtip hangi zaman diliminde çalışacağını belirtiyoruz.
-                       .Build();
+                           .UsingJobData(jobdataMap);
+
+                    if (string.IsNullOrEmpty(customerJob.Cron) == false)
+                    {
+                        triggerBuilder = triggerBuilder.WithCronSchedule(customerJob.Cron);//Zamanlayıcımızı Trigger içerisinde belirtip hangi zaman diliminde çalışacağını belirtiyoruz.
+                    }
+
+                    ITrigger jobTrigger = triggerBuilder.Build();
                     var result = await _scheduler.ScheduleJob(jobDetail, jobTrigger);
                 }
 

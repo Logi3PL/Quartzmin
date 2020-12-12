@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SelfHosting.Services
 {
-    public interface ICustomJobService
+    public interface IJobService
     {
-        List<CustomerJob> GetAll();
+        List<Job> GetAll();
     }
 }

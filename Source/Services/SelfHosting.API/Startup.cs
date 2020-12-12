@@ -28,6 +28,8 @@ namespace SelfHosting.API
 
             ///Basit bir SeriLog entegrasyonu gerçekleştiriyoruz.
             Configuration = configuration;
+
+            //TODO: Slf'yi baz al
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
@@ -40,25 +42,25 @@ namespace SelfHosting.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers().AddNewtonsoftJson(options =>
                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
              );
 
+            //TODO:Configden al
             services.AddDbContext<JobContext>(option => option.UseSqlServer(@"Data Source=192.168.5.43\LOGITEST,1434;Initial Catalog=LOGI3PLJMS;Persist Security Info=True;User ID=sa;Password=3plLogi+;MultipleActiveResultSets=True;Encrypt=False;Application Name=LOGIJOB;Connection Lifetime=3;Max Pool Size=3"));
-
 
             //AppSettings içerinde tanımlamış olduğum parametreleri sınıfıma set ediyorum.
             services.Configure<ConfigParameter>(Configuration.GetSection("ConfigParameter"));
-
 
             //Worker Servimiz ayağa kalktığında Üreteceği SchedulerFactory Context'ine API üzerinden erişebilmek için ctor'u bir kez ayağa kaldırıyoruz.
             services.AddSingleton(typeof(SchedulerWorkerService));
             
             //Worker Servisin Tüketeceği Scheduler servisi Singleton yapıyoruz. Api tarafından Monitoring işlemlerinde Quartz Context'ini kullanabilmek için..
             services.AddSingleton<ISchedulerService, SchedulerService>();
-            services.AddScoped<ICustomJobRepository, CustomJobRepository>();
-            services.AddScoped<ICustomJobService, CustomJobService>();
+            services.AddScoped<ICustomerJobRepository, CustomerJobRepository>();
+            services.AddScoped<ICustomerJobService, CustomerJobService>();
+            services.AddScoped<IJobService, JobService>();
+            services.AddScoped<IJobRepository, JobRepository>();
 
             services.AddControllers();
         }

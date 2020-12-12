@@ -13,9 +13,9 @@ namespace SelfHosting.API.Controllers
     public class CustomerJobController : Controller
     {
 
-        private readonly ICustomJobService _customJobService;
+        private readonly ICustomerJobService _customJobService;
 
-        public CustomerJobController(ICustomJobService customJobService)
+        public CustomerJobController(ICustomerJobService customJobService)
         {
             _customJobService = customJobService;
         }
@@ -26,6 +26,12 @@ namespace SelfHosting.API.Controllers
            var customerJobs =  _customJobService.GetAll();
 
             return Ok(customerJobs);
+        }
+
+        [HttpPost]
+        public async Task<dynamic> AssignJob(int customerId, int jobId, string cron = "")
+        {
+            return await _customJobService.AssignJob(customerId,jobId,cron);
         }
     }
 }
