@@ -4,6 +4,7 @@ using Quartz.Impl;
 using RestSharp;
 using SelfHosting.API.AppSettings;
 using SelfHosting.Common;
+using SelfHosting.Common.Request;
 using SelfHosting.Repository.CurrentJobs;
 using Serilog;
 using System;
@@ -167,8 +168,11 @@ namespace SelfHosting.Services
                     //jobdataMap.Add("BaseUrl", customerJob.Job.BaseUrl);
                     //jobdataMap.Add("EndPoint", customerJob.Job.EndPoint);
 
+                    var customerJobParameters = JsonConvert.SerializeObject(customerJob.CustomerJobParameters.Select(x => new AssignJobParameterItem() { ParamKey = x.ParamKey, ParamSource = x.ParamSource, ParamValue = x.ParamValue }).ToList());
+
                     jobdataMap.Add("SchedulerJobName", customerJob.Job.Name);
                     jobdataMap.Add("SchedulerJobPathRoot", root);
+                    jobdataMap.Add("SchedulerJobParameters", customerJobParameters);
 
                     IJobDetail jobDetail = JobBuilder.Create<JobExecuter.JobExecuter>()
                 .WithIdentity(jobName, jobGroup).Build();

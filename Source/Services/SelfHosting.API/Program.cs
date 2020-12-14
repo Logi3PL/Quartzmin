@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SelfHosting.API.WorkerService;
+using Logi3plJMS.API.WorkerService;
 using SelfHosting.Services;
 
-namespace SelfHosting.API
+namespace Logi3plJMS.API
 {
     public class Program
     {

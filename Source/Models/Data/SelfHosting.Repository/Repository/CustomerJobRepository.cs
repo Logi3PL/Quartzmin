@@ -16,7 +16,7 @@ namespace SelfHosting.Repository
         {
             _jobContext = jobContext;
         }
-        public List<CustomerJob> GetAll() => _jobContext.CustomerJob.Include(x=> x.Job).ToList();
+        public List<CustomerJob> GetAll() => _jobContext.CustomerJob.Where(x=>x.Active == 1).Include(x=> x.Job).Include(x => x.CustomerJobParameters).ToList();
 
         public async Task<dynamic> AssignJob(AssignJobRequest assignJobRequest)
         {

@@ -1,6 +1,8 @@
-﻿using Quartz;
+﻿using Newtonsoft.Json;
+using Quartz;
 using RestSharp;
 using SelfHosting.Common;
+using SelfHosting.Common.Request;
 using SelfHosting.Repository;
 using Serilog;
 using System;
@@ -40,6 +42,14 @@ namespace SelfHosting.Services.JobExecuter
             //var SchedulerJob = (ISchedulerJob)dataMap.Get("SchedulerJob");
             var SchedulerJobName = (string)dataMap.Get("SchedulerJobName");
             var root = (string)dataMap.Get("SchedulerJobPathRoot");
+            var jobParameters = new List<AssignJobParameterItem>();
+
+            if (dataMap.ContainsKey("SchedulerJobParameters"))
+            {
+                var prmString = dataMap.Get("SchedulerJobParameters").ToString();
+
+                jobParameters = JsonConvert.DeserializeObject<List<AssignJobParameterItem>>(prmString);
+            }
 
             string pluginFolder = Path.Combine(root, "JobPlugins");
 
@@ -51,7 +61,7 @@ namespace SelfHosting.Services.JobExecuter
 
             var SchedulerJob = (ISchedulerJob)Activator.CreateInstance(jobType);
 
-            await SchedulerJob.ExecuteJobAsync(BaseUrl, EndPoint);
+            await SchedulerJob.ExecuteJobAsync(BaseUrl, EndPoint, jobParameters);
 
         }
     }

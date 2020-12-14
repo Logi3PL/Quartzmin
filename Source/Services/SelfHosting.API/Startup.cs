@@ -11,14 +11,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SelfHosting.API.AppSettings;
-using SelfHosting.API.WorkerService;
+using Logi3plJMS.API.WorkerService;
 using SelfHosting.Repository;
 using SelfHosting.Services;
 using Serilog;
 using Serilog.Events;
+using SelfHosting.API.AppSettings;
 
-namespace SelfHosting.API
+namespace Logi3plJMS.API
 {
     public class Startup
     {

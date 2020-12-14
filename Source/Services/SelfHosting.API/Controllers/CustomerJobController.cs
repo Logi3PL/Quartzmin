@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using SelfHosting.Common.Request;
 using SelfHosting.Services;
 
-namespace SelfHosting.API.Controllers
+namespace Logi3plJMS.API.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]

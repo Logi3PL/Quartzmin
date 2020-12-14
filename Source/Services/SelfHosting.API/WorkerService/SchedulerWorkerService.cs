@@ -7,7 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SelfHosting.API.WorkerService
+namespace Logi3plJMS.API.WorkerService
 {
 
     /// <summary>

@@ -1,7 +1,9 @@
 ﻿using RestSharp;
 using SelfHosting.Common;
+using SelfHosting.Common.Request;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EmailSendJob
@@ -15,7 +17,7 @@ namespace EmailSendJob
 
         public string Name => "SendEmailJob";
 
-        public async Task ExecuteJobAsync(string apiUrl, string EndPoint)
+        public async Task ExecuteJobAsync(string apiUrl, string EndPoint, List<AssignJobParameterItem> jobParameterItems)
         {
             var client = new RestClient(apiUrl);
 
