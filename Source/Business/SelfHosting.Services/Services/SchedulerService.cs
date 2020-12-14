@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
+using Quartz.Plugins.RecentHistory;
+using Quartz.Plugins.RecentHistory.Db;
 using RestSharp;
 using SelfHosting.API.AppSettings;
 using SelfHosting.Common;
@@ -20,9 +22,11 @@ namespace SelfHosting.Services
     public class SchedulerService : ISchedulerService
     {
         private PluginContext PluginContext;
-        public SchedulerService()
+        private IServiceProvider _serviceProvider;
+        public SchedulerService(IServiceProvider serviceProvider)
         {
             PluginContext = new PluginContext();
+            _serviceProvider = serviceProvider;
         }
 
         public async Task Load(string root, ConfigParameter configParameter)
@@ -99,15 +103,18 @@ namespace SelfHosting.Services
             configuration["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
             configuration["quartz.threadPool.threadCount"] = "5";
             configuration["quartz.threadPool.threadPriority"] = "Normal";
-            //configuration["quartz.plugin.recentHistory.type"] = "Quartz.Plugins.RecentHistory.ExecutionHistoryPlugin, Quartz.Plugins.RecentHistory";
-
-            //configuration["quartz.plugin.recentHistory.storeType"] = "Quartz.Plugins.RecentHistory.Impl.InProcExecutionHistoryStore, Quartz.Plugins.RecentHistory";
+            configuration["quartz.plugin.recentHistory.type"] = "Quartz.Plugins.RecentHistory.ExecutionHistoryPlugin, Quartz.Plugins.RecentHistory";
+            configuration["quartz.plugin.recentHistory.storeType"] = "Quartz.Plugins.RecentHistory.Db.DbExecutionHistoryStore, SelfHosting.Services";
 
             IScheduler _scheduler = null;
 
             try
             {
                 _scheduler = await new StdSchedulerFactory(configuration).GetScheduler();
+                //var executionHistoryPlugin = new ExecutionHistoryPlugin() {Name = "ExecutionHistoryPlugin",StoreType = typeof(DbExecutionHistoryStore) };
+                //_scheduler.ListenerManager.AddJobListener(executionHistoryPlugin);
+
+                //_scheduler.JobFactory = new JobFactory(_serviceProvider);
             }
             catch (Exception exs)
             {
@@ -167,6 +174,13 @@ namespace SelfHosting.Services
                     //TODO ???
                     //jobdataMap.Add("BaseUrl", customerJob.Job.BaseUrl);
                     //jobdataMap.Add("EndPoint", customerJob.Job.EndPoint);
+
+                    if (customerJob.CustomerJobParameters == null)
+                    {
+                        customerJob.CustomerJobParameters = new List<CustomerJobParameter>();
+                    }
+
+                    customerJob.CustomerJobParameters.Add(new CustomerJobParameter() { ParamKey = ConstantHelper.SchedulerJobHelper.CustomerJobIdKey, ParamValue = customerJob.Id.ToString(),ParamSource = customerJob.Customer.CustomerCode });
 
                     var customerJobParameters = JsonConvert.SerializeObject(customerJob.CustomerJobParameters.Select(x => new AssignJobParameterItem() { ParamKey = x.ParamKey, ParamSource = x.ParamSource, ParamValue = x.ParamValue }).ToList());
 

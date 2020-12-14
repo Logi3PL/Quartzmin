@@ -11,4 +11,5 @@ public class CustomerJob:BaseEntity
     public DateTimeOffset? StartDate { get; set; }
     public DateTimeOffset? EndDate { get; set; }
     public virtual List<CustomerJobParameter> CustomerJobParameters { get; set; }
+    public virtual List<CustomerJobHistory> CustomerJobHistories { get; set; }
 }

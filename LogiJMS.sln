@@ -55,7 +55,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmailSendJob", "Source\Infr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{7A6D9A2D-2A68-4578-9F90-7DB2C6CE1BD6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SelfHosting.API", "Source\Services\SelfHosting.API\SelfHosting.API.csproj", "{5D8393EE-8B75-4F8C-9A34-4DE86326D3A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logi3plJMS.API", "Source\Services\SelfHosting.API\Logi3plJMS.API.csproj", "{5D8393EE-8B75-4F8C-9A34-4DE86326D3A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientWebApi", "Source\Examples\ClientWebApi\ClientWebApi.csproj", "{9B550861-E8B5-48E7-B34B-467AE31F523B}"
 EndProject

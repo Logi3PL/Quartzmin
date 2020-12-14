@@ -17,7 +17,17 @@ namespace SelfHosting.Services.JobExecuter
 {
     public class JobExecuter : IJob
     {
+        private ICustomerJobHistoryRepository _customerJobHistoryRepository;
+        private readonly IServiceProvider _provider;
+        public JobExecuter()
+        {
+            //_customerjobhistoryrepository = customerjobhistoryrepository;
+        }
 
+        //public JobExecuter(IServiceProvider provider)
+        //{
+        //    _provider = provider;
+        //}
         /// <summary>
         /// Job'ı çalıştıran method.
         /// </summary>
@@ -61,7 +71,7 @@ namespace SelfHosting.Services.JobExecuter
 
             var SchedulerJob = (ISchedulerJob)Activator.CreateInstance(jobType);
 
-            await SchedulerJob.ExecuteJobAsync(BaseUrl, EndPoint, jobParameters);
+            await SchedulerJob.ExecuteJobAsync(_customerJobHistoryRepository, BaseUrl, EndPoint, jobParameters);
 
         }
     }

@@ -166,6 +166,23 @@ namespace SelfHosting.Repository
                     .HasDefaultValueSql("(getutcdate())");
 
             });
+            
+            modelBuilder.Entity<CustomerJobHistory>(entity =>
+            {
+                entity.ToTable("JMS_CUSTOMERJOBHISTORY");
+
+                entity.HasOne(x => x.CustomerJob).WithMany(y => y.CustomerJobHistories)
+                .HasForeignKey(c => c.CustomerJobId);
+
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.CustomerJobId).HasColumnName("CUSTOMERJOBID");
+                entity.Property(e => e.ProcessStatus).HasColumnName("PROCESSSTATUS");
+                entity.Property(e => e.ProcessTime).HasColumnName("PROCESSTIME").HasColumnType("datetimeoffset(7)");
+
+            });
 
             base.OnModelCreating(modelBuilder);
         }
@@ -181,5 +198,6 @@ namespace SelfHosting.Repository
         public  DbSet<Job> Jobs { get; set; }
         public  DbSet<CustomerJob> CustomerJob { get; set; }
         public DbSet<CustomerJobParameter> CustomerJobParameter { get; set; }
+        public  DbSet<CustomerJobHistory> CustomerJobHistories { get; set; }
     }
 }

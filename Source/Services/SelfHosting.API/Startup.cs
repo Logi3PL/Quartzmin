@@ -17,6 +17,8 @@ using SelfHosting.Services;
 using Serilog;
 using Serilog.Events;
 using SelfHosting.API.AppSettings;
+using Quartz;
+using SelfHosting.Services.JobExecuter;
 
 namespace Logi3plJMS.API
 {
@@ -77,7 +79,8 @@ namespace Logi3plJMS.API
             services.AddScoped<ICustomerJobService, CustomerJobService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<IJobRepository, JobRepository>();
-
+            services.AddScoped<ICustomerJobHistoryRepository, CustomerJobHistoryRepository>();
+            
             services.AddControllers();
         }
 

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Models\Common\SelfHosting.Common\SelfHosting.Common.csproj" />
+    <ProjectReference Include="..\..\..\Models\Data\SelfHosting.Repository\SelfHosting.Repository.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

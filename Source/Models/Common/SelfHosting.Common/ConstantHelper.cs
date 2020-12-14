@@ -8,5 +8,11 @@ namespace SelfHosting.Common
     {
         public const string JobNamePrefix = "job-";
         public const string JobGroupPrefix = "group-";
+
+        public struct SchedulerJobHelper
+        {
+            public const string CustomerJobIdKey = "CustomerJobId";
+            public const string CallerAppNameKey = "CallerAppName";
+        }
     }
 }
