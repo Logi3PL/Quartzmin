@@ -1,4 +1,5 @@
-﻿using SelfHosting.Repository;
+﻿using SelfHosting.Common.Request;
+using SelfHosting.Repository;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,9 +14,9 @@ namespace SelfHosting.Services
         }
         public List<CustomerJob> GetAll() => _customJobRepository.GetAll();
 
-        public async Task<dynamic> AssignJob(int customerId, int jobId, string cron = "")
+        public async Task<dynamic> AssignJob(AssignJobRequest assignJobRequest)
         {
-            return await _customJobRepository.AssignJob(customerId,jobId,cron);
+            return await _customJobRepository.AssignJob(assignJobRequest);
         }
     }
 }

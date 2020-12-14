@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SelfHosting.Common.Request;
 using SelfHosting.Services;
 
 namespace SelfHosting.API.Controllers
@@ -29,9 +30,9 @@ namespace SelfHosting.API.Controllers
         }
 
         [HttpPost]
-        public async Task<dynamic> AssignJob(int customerId, int jobId, string cron = "")
+        public async Task<dynamic> AssignJob(AssignJobRequest assignJobRequest)
         {
-            return await _customJobService.AssignJob(customerId,jobId,cron);
+            return await _customJobService.AssignJob(assignJobRequest);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace SelfHosting.Common
                     new
                     {
                         Errors = new List<dynamic>(),
+                        ResponseStatus = true,
                         Result = data
                     }
                 );
@@ -27,6 +28,7 @@ namespace SelfHosting.Common
                         {
                             new { ex.Message}
                         },
+                        ResponseStatus = false,
                         Result = default(Object)
                     }
                 );

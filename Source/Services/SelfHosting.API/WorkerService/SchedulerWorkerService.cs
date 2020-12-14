@@ -33,8 +33,6 @@ namespace SelfHosting.API.WorkerService
         /// <returns></returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 Log.Information("Worker Servis Çalıştı");

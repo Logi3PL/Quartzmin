@@ -46,6 +46,22 @@ namespace SelfHosting.API
                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
              );
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
+                {
+                    Title = "Schedule WepApi",
+                    Version = "1.0.0",
+                    Description = "Logi3PL JMS Schedule Api",
+                    Contact = new Microsoft.OpenApi.Models.OpenApiContact()
+                    {
+                        Name = "Job Management - LOGI3PLJMS",
+                        Email = "toztek@logi3pl.com"
+                    },
+                    TermsOfService = new Uri("http://swagger.io/terms")
+                });
+            });
+
             //TODO:Configden al
             services.AddDbContext<JobContext>(option => option.UseSqlServer(@"Data Source=192.168.5.43\LOGITEST,1434;Initial Catalog=LOGI3PLJMS;Persist Security Info=True;User ID=sa;Password=3plLogi+;MultipleActiveResultSets=True;Encrypt=False;Application Name=LOGIJOB;Connection Lifetime=3;Max Pool Size=3"));
 
@@ -86,6 +102,12 @@ namespace SelfHosting.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Schedule API");
             });
         }
     }

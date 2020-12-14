@@ -184,6 +184,16 @@ namespace SelfHosting.Services
                         triggerBuilder = triggerBuilder.WithCronSchedule(customerJob.Cron);//Zamanlayıcımızı Trigger içerisinde belirtip hangi zaman diliminde çalışacağını belirtiyoruz.
                     }
 
+                    if (customerJob.StartDate.HasValue)
+                    {
+                        triggerBuilder.StartAt(customerJob.StartDate.Value);
+                    }
+
+                    if (customerJob.EndDate.HasValue)
+                    {
+                        triggerBuilder.EndAt(customerJob.EndDate.Value);
+                    }
+
                     ITrigger jobTrigger = triggerBuilder.Build();
                     var result = await _scheduler.ScheduleJob(jobDetail, jobTrigger);
                 }

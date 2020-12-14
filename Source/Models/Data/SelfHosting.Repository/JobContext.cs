@@ -25,7 +25,11 @@ namespace SelfHosting.Repository
 
                 entity.Property(e => e.Name).HasColumnName("NAME");
 
-                entity.Property(e => e.Description)
+                entity.Property(e => e.Code)
+                    .HasColumnName("CODE")
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Description).IsRequired(false)
                     .HasColumnName("DESCRIPTION")
                     .HasMaxLength(1000);
 
@@ -103,7 +107,45 @@ namespace SelfHosting.Repository
                 entity.Property(e => e.Id).HasColumnName("ID");
                 entity.Property(e => e.CustomerId).HasColumnName("CUSTOMERID");
                 entity.Property(e => e.JobId).HasColumnName("JOBID");
-                entity.Property(e => e.Cron).HasColumnName("CRON").HasMaxLength(1000);
+                entity.Property(e => e.StartDate).HasColumnName("STARTDATE").IsRequired(false);
+                entity.Property(e => e.EndDate).HasColumnName("ENDDATE").IsRequired(false);
+                entity.Property(e => e.Cron).HasColumnName("CRON").HasMaxLength(1000).IsRequired(false);
+
+                entity.Property(e => e.Active)
+                    .HasColumnName("ACTIVE")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("CREATEDBY");
+
+                entity.Property(e => e.CreatedTime)
+                    .HasColumnName("CREATEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("MODIFIEDBY").IsRequired(false);
+
+                entity.Property(e => e.ModifiedTime).IsRequired(false)
+                    .HasColumnName("MODIFIEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+            });
+
+            modelBuilder.Entity<CustomerJobParameter>(entity =>
+            {
+                entity.ToTable("JMS_CUSTOMERJOBPARAMETER");
+
+                entity.HasKey(cj => cj.Id);
+
+                entity.HasOne(c => c.CustomerJob)
+                .WithMany(b => b.CustomerJobParameters)
+                .HasForeignKey(c => c.CustomerJobId);
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.Property(e => e.CustomerJobId).HasColumnName("CUSTOMERJOBID");
+                entity.Property(e => e.ParamSource).HasColumnName("PARAMSOURCE");
+                entity.Property(e => e.ParamKey).HasColumnName("PARAMKEY");
+                entity.Property(e => e.ParamValue).HasColumnName("PARAMVALUE");
 
                 entity.Property(e => e.Active)
                     .HasColumnName("ACTIVE")
@@ -138,5 +180,6 @@ namespace SelfHosting.Repository
         public  DbSet<Customer>  Customers { get; set; }
         public  DbSet<Job> Jobs { get; set; }
         public  DbSet<CustomerJob> CustomerJob { get; set; }
+        public DbSet<CustomerJobParameter> CustomerJobParameter { get; set; }
     }
 }
