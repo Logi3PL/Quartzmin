@@ -70,7 +70,7 @@ namespace SelfHosting.Repository
                             CreatedTime = DateTime.Now
                         };
 
-                        _jobContext.CustomerJob.Add(customerJob);
+                        _jobContext.CustomerJobParameter.Add(customerJobParam);
                     }
 
                     res = await _jobContext.SaveChangesAsync();
