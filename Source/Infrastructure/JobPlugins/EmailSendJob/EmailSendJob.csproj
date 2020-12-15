@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -12,9 +12,5 @@
     <ProjectReference Include="..\..\..\Models\Common\SelfHosting.Common\SelfHosting.Common.csproj" />
     <ProjectReference Include="..\..\..\Models\Data\SelfHosting.Repository\SelfHosting.Repository.csproj" />
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetDir)$(TargetFileName)&quot; &quot;$(SolutionDir)SelfHosting.API\JobPlugins\$(TargetFileName)&quot;" />
-  </Target>
 
 </Project>

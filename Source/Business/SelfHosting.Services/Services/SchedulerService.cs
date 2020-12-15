@@ -103,8 +103,8 @@ namespace SelfHosting.Services
             configuration["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
             configuration["quartz.threadPool.threadCount"] = "5";
             configuration["quartz.threadPool.threadPriority"] = "Normal";
-            configuration["quartz.plugin.recentHistory.type"] = "Quartz.Plugins.RecentHistory.ExecutionHistoryPlugin, Quartz.Plugins.RecentHistory";
-            configuration["quartz.plugin.recentHistory.storeType"] = "Quartz.Plugins.RecentHistory.Db.DbExecutionHistoryStore, SelfHosting.Services";
+            //configuration["quartz.plugin.recentHistory.type"] = "Quartz.Plugins.RecentHistory.ExecutionHistoryPlugin, Quartz.Plugins.RecentHistory";
+            //configuration["quartz.plugin.recentHistory.storeType"] = "Quartz.Plugins.RecentHistory.Db.DbExecutionHistoryStore, SelfHosting.Services";
 
             IScheduler _scheduler = null;
 
