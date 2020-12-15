@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Quartz;
 using RestSharp;
 using SelfHosting.Common;
@@ -19,9 +20,9 @@ namespace SelfHosting.Services.JobExecuter
     {
         private ICustomerJobHistoryRepository _customerJobHistoryRepository;
         private readonly IServiceProvider _provider;
-        public JobExecuter()
+        public JobExecuter(IServiceProvider provider)
         {
-            //_customerjobhistoryrepository = customerjobhistoryrepository;
+            _provider = provider;
         }
 
         //public JobExecuter(IServiceProvider provider)
@@ -36,42 +37,50 @@ namespace SelfHosting.Services.JobExecuter
         public async Task Execute(IJobExecutionContext context)
         {
 
-            JobDataMap dataMap = context.MergedJobDataMap;
-
-            //Gidilecek Url bilgisini string olarak alıyoruz.
-            var BaseUrl = dataMap.GetString("BaseUrl");
-
-
-            //Endpoint bilgisini string olarak alıyoruz.
-            var EndPoint = dataMap.GetString("EndPoint");
-
-
-            ///Generic bir yapı oluşturabilmek için abstract factory method ile yakaladığımız sınıfı burda tetikliyoruz.
-            ///Hangi Job Sınıfı bize döndürülürse onu çalıştıracağız.
-            
-            //var SchedulerJob = (ISchedulerJob)dataMap.Get("SchedulerJob");
-            var SchedulerJobName = (string)dataMap.Get("SchedulerJobName");
-            var root = (string)dataMap.Get("SchedulerJobPathRoot");
-            var jobParameters = new List<AssignJobParameterItem>();
-
-            if (dataMap.ContainsKey("SchedulerJobParameters"))
+            // Create a new scope
+            using (var scope = _provider.CreateScope())
             {
-                var prmString = dataMap.Get("SchedulerJobParameters").ToString();
+                // Resolve the Scoped service
+                _customerJobHistoryRepository = scope.ServiceProvider.GetRequiredService<ICustomerJobHistoryRepository>();
 
-                jobParameters = JsonConvert.DeserializeObject<List<AssignJobParameterItem>>(prmString);
+                JobDataMap dataMap = context.MergedJobDataMap;
+
+                //Gidilecek Url bilgisini string olarak alıyoruz.
+                var BaseUrl = dataMap.GetString("BaseUrl");
+
+
+                //Endpoint bilgisini string olarak alıyoruz.
+                var EndPoint = dataMap.GetString("EndPoint");
+
+
+                ///Generic bir yapı oluşturabilmek için abstract factory method ile yakaladığımız sınıfı burda tetikliyoruz.
+                ///Hangi Job Sınıfı bize döndürülürse onu çalıştıracağız.
+
+                //var SchedulerJob = (ISchedulerJob)dataMap.Get("SchedulerJob");
+                var SchedulerJobName = (string)dataMap.Get("SchedulerJobName");
+                var root = (string)dataMap.Get("SchedulerJobPathRoot");
+                var jobParameters = new List<AssignJobParameterItem>();
+
+                if (dataMap.ContainsKey("SchedulerJobParameters"))
+                {
+                    var prmString = dataMap.Get("SchedulerJobParameters").ToString();
+
+                    jobParameters = JsonConvert.DeserializeObject<List<AssignJobParameterItem>>(prmString);
+                }
+
+                string pluginFolder = Path.Combine(root, "JobPlugins");
+
+                string[] filePaths = Directory.GetFiles(pluginFolder, $"{SchedulerJobName}.dll");
+
+                var jobAssembly = Assembly.LoadFile(filePaths[0]);
+
+                var jobType = jobAssembly.GetTypes().Where(x => x.GetInterface(nameof(ISchedulerJob)) != null).FirstOrDefault();
+
+                var SchedulerJob = (ISchedulerJob)Activator.CreateInstance(jobType);
+
+                await SchedulerJob.ExecuteJobAsync(_customerJobHistoryRepository, BaseUrl, EndPoint, jobParameters);
+
             }
-
-            string pluginFolder = Path.Combine(root, "JobPlugins");
-
-            string[] filePaths = Directory.GetFiles(pluginFolder, $"{SchedulerJobName}.dll");
-
-            var jobAssembly = Assembly.LoadFile(filePaths[0]);
-
-            var jobType = jobAssembly.GetTypes().Where(x => x.GetInterface(nameof(ISchedulerJob)) != null).FirstOrDefault();
-
-            var SchedulerJob = (ISchedulerJob)Activator.CreateInstance(jobType);
-
-            await SchedulerJob.ExecuteJobAsync(_customerJobHistoryRepository, BaseUrl, EndPoint, jobParameters);
 
         }
     }

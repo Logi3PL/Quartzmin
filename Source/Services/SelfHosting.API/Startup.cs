@@ -19,6 +19,9 @@ using Serilog.Events;
 using SelfHosting.API.AppSettings;
 using Quartz;
 using SelfHosting.Services.JobExecuter;
+using Quartz.Impl;
+using System.Collections.Specialized;
+using Quartz.Spi;
 
 namespace Logi3plJMS.API
 {
@@ -65,7 +68,9 @@ namespace Logi3plJMS.API
             });
 
             //TODO:Configden al
-            services.AddDbContext<JobContext>(option => option.UseSqlServer(@"Data Source=192.168.5.43\LOGITEST,1434;Initial Catalog=LOGI3PLJMS;Persist Security Info=True;User ID=sa;Password=3plLogi+;MultipleActiveResultSets=True;Encrypt=False;Application Name=LOGIJOB;Connection Lifetime=3;Max Pool Size=3"));
+            services.AddDbContext<JobContext>(option => option.UseSqlServer(@"Data Source=192.168.5.43\LOGITEST,1434;Initial Catalog=LOGI3PLJMS;Persist Security Info=True;User ID=sa;Password=3plLogi+;MultipleActiveResultSets=True;Encrypt=False;Application Name=LOGIJOB;Connection Lifetime=3;Max Pool Size=3"));//TODO?
+
+            services.AddScoped<JobContext>();
 
             //AppSettings içerinde tanımlamış olduğum parametreleri sınıfıma set ediyorum.
             services.Configure<ConfigParameter>(Configuration.GetSection("ConfigParameter"));
@@ -79,8 +84,42 @@ namespace Logi3plJMS.API
             services.AddScoped<ICustomerJobService, CustomerJobService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<IJobRepository, JobRepository>();
-            services.AddScoped<ICustomerJobHistoryRepository, CustomerJobHistoryRepository>();
             
+            services.AddScoped<ICustomerJobHistoryRepository, CustomerJobHistoryRepository>();
+
+            services.AddTransient<JobExecuter>();
+
+            NameValueCollection configuration = new NameValueCollection
+            {
+                { "quartz.scheduler.instanceName", "LocalServer" },
+                { "quartz.scheduler.instanceId", "LocalServer" },
+                { "quartz.jobStore.type", "Quartz.Impl.AdoJobStore.JobStoreTX, Quartz" },
+                //{ "quartz.jobStore.useProperties", "true" },
+                { "quartz.jobStore.dataSource", "default" },
+                { "quartz.jobStore.tablePrefix", "QRTZ_" },
+                { "quartz.dataSource.default.connectionString",@"Data Source=192.168.5.43\LOGITEST,1434;Initial Catalog=LOGI3PLJMS;Persist Security Info=True;User ID=sa;Password=3plLogi+;MultipleActiveResultSets=True;Encrypt=False;Application Name=LOGIJOB;Connection Lifetime=3;Max Pool Size=3" },//TODO?
+                { "quartz.dataSource.default.provider", "SqlServer" },
+                { "quartz.serializer.type", "binary" }
+            };
+
+            configuration["quartz.threadPool.type"] = "Quartz.Simpl.SimpleThreadPool, Quartz";
+            configuration["quartz.threadPool.threadCount"] = "5";
+            configuration["quartz.threadPool.threadPriority"] = "Normal";
+            //configuration["quartz.plugin.recentHistory.type"] = "Quartz.Plugins.RecentHistory.ExecutionHistoryPlugin, Quartz.Plugins.RecentHistory";
+            //configuration["quartz.plugin.recentHistory.storeType"] = "Quartz.Plugins.RecentHistory.Db.DbExecutionHistoryStore, SelfHosting.Services";
+
+            services.AddSingleton<IJobFactory, JobFactory>();
+            //services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
+
+            services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>((x) =>
+            {
+                var factory = new StdSchedulerFactory(configuration);
+                return factory;
+            });
+
+
+            services.AddHostedService<QuartzHostedService>();
+
             services.AddControllers();
         }
 

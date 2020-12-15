@@ -23,12 +23,13 @@ namespace EmailSendJob
 
         public string Name => "SendEmailJob";
 
-        public async Task ExecuteJobAsync(dynamic customerJobHistoryRepository,string apiUrl, string EndPoint, List<AssignJobParameterItem> jobParameterItems)
+        public async Task ExecuteJobAsync(dynamic repository,string apiUrl, string EndPoint, List<AssignJobParameterItem> jobParameterItems)
         {
             var customerJobIdPrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.CustomerJobIdKey).FirstOrDefault();
 
             Int32.TryParse(customerJobIdPrm.ParamValue, out int customerJobId);
 
+            ICustomerJobHistoryRepository customerJobHistoryRepository = repository as ICustomerJobHistoryRepository;
             await customerJobHistoryRepository.AddHistory(new AddHistoryRequest() { 
                 CustomerJobId = customerJobId,
                 ProcessStatus = SelfHosting.Common.JobScheduler.ProcessStatusTypes.Executing,

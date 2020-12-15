@@ -11,32 +11,36 @@ namespace SelfHosting.Repository
 {
     public class CustomerJobHistoryRepository : ICustomerJobHistoryRepository
     {
-        private readonly JobContext _jobContext;
-        public CustomerJobHistoryRepository(JobContext jobContext)
+        private readonly DbContextOptions<JobContext> _option;
+        public CustomerJobHistoryRepository(DbContextOptions<JobContext> option)
         {
-            _jobContext = jobContext;
+            _option = option;
         }
 
         public async Task<dynamic> AddHistory(AddHistoryRequest addHistoryRequest)
         {
             try
             {
-                var customerJobHistory = new CustomerJobHistory()
+                using (JobContext context = new JobContext(_option))
                 {
-                    CustomerJobId = addHistoryRequest.CustomerJobId,
-                    ProcessStatus = (byte)addHistoryRequest.ProcessStatus,
-                    ProcessTime = addHistoryRequest.ProcessTime
-                };
+                    var customerJobHistory = new CustomerJobHistory()
+                    {
+                        CustomerJobId = addHistoryRequest.CustomerJobId,
+                        ProcessStatus = (byte)addHistoryRequest.ProcessStatus,
+                        ProcessTime = addHistoryRequest.ProcessTime
+                    };
 
-                _jobContext.CustomerJobHistories.Add(customerJobHistory);
-                var res = await _jobContext.SaveChangesAsync();
+                    context.CustomerJobHistories.Add(customerJobHistory);
+                    var res = await context.SaveChangesAsync();
 
-                if (res < 1)
-                {
-                    var exp = new InvalidOperationException("CustomerJobHistory -> Save Error");
+                    if (res < 1)
+                    {
+                        var exp = new InvalidOperationException("CustomerJobHistory -> Save Error");
+                    }
+
+                    return Helper.ReturnOk(customerJobHistory.Id);
                 }
-
-                return Helper.ReturnOk(customerJobHistory.Id);
+                
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Plugins.RecentHistory;
@@ -110,7 +111,10 @@ namespace SelfHosting.Services
 
             try
             {
-                _scheduler = await new StdSchedulerFactory(configuration).GetScheduler();
+                ISchedulerFactory schedulerFactory = _serviceProvider.GetRequiredService<ISchedulerFactory>();
+                _scheduler = await schedulerFactory.GetScheduler();
+
+                //_scheduler = await new StdSchedulerFactory(configuration).GetScheduler();
                 //var executionHistoryPlugin = new ExecutionHistoryPlugin() {Name = "ExecutionHistoryPlugin",StoreType = typeof(DbExecutionHistoryStore) };
                 //_scheduler.ListenerManager.AddJobListener(executionHistoryPlugin);
 
@@ -118,12 +122,11 @@ namespace SelfHosting.Services
             }
             catch (Exception exs)
             {
-
                 throw;
             }
 
             //Zamanlayıcı başlatıyoruz.
-            await _scheduler.Start();
+            //await _scheduler.Start();
 
             Log.Information("Scheduler Başlatıldı");
 
@@ -188,8 +191,7 @@ namespace SelfHosting.Services
                     jobdataMap.Add("SchedulerJobPathRoot", root);
                     jobdataMap.Add("SchedulerJobParameters", customerJobParameters);
 
-                    IJobDetail jobDetail = JobBuilder.Create<JobExecuter.JobExecuter>()
-                .WithIdentity(jobName, jobGroup).Build();
+                    IJobDetail jobDetail = JobBuilder.Create<JobExecuter.JobExecuter>().WithIdentity(jobName, jobGroup).Build();
                     /*Uniq oluşturduğumuz keyleri burada kullanıyoruz ve Build ile Joblarımızı çalıştıracak olan JobExecuter sınıfını
                     ayağa kaldırıyoruz. */
 
