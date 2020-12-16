@@ -45,20 +45,9 @@ namespace SelfHosting.Services.JobExecuter
 
                 JobDataMap dataMap = context.MergedJobDataMap;
 
-                //Gidilecek Url bilgisini string olarak alıyoruz.
-                var BaseUrl = dataMap.GetString("BaseUrl");
-
-
-                //Endpoint bilgisini string olarak alıyoruz.
-                var EndPoint = dataMap.GetString("EndPoint");
-
-
-                ///Generic bir yapı oluşturabilmek için abstract factory method ile yakaladığımız sınıfı burda tetikliyoruz.
-                ///Hangi Job Sınıfı bize döndürülürse onu çalıştıracağız.
-
                 //var SchedulerJob = (ISchedulerJob)dataMap.Get("SchedulerJob");
-                var SchedulerJobName = (string)dataMap.Get("SchedulerJobName");
-                var root = (string)dataMap.Get("SchedulerJobPathRoot");
+                var SchedulerJobName = dataMap.GetString("SchedulerJobName");
+                var root = dataMap.GetString("SchedulerJobPathRoot");
                 var jobParameters = new List<AssignJobParameterItem>();
 
                 if (dataMap.ContainsKey("SchedulerJobParameters"))
@@ -78,7 +67,7 @@ namespace SelfHosting.Services.JobExecuter
 
                 var SchedulerJob = (ISchedulerJob)Activator.CreateInstance(jobType);
 
-                await SchedulerJob.ExecuteJobAsync(_customerJobHistoryRepository, BaseUrl, EndPoint, jobParameters);
+                await SchedulerJob.ExecuteJobAsync(scope.ServiceProvider, jobParameters);
 
             }
 

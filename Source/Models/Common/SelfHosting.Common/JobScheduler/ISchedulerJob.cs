@@ -10,6 +10,6 @@ namespace SelfHosting.Common
     {
         Guid Guid { get; }
         string Name { get; }
-        Task ExecuteJobAsync(dynamic customerJobHistoryRepository,string apiUrl, string EndPoint,List<AssignJobParameterItem> jobParameterItems);
+        Task ExecuteJobAsync(IServiceProvider serviceProvider,List<AssignJobParameterItem> jobParameterItems);
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -11,6 +11,15 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Models\Common\SelfHosting.Common\SelfHosting.Common.csproj" />
     <ProjectReference Include="..\..\..\Models\Data\SelfHosting.Repository\SelfHosting.Repository.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Logi3PL.Business.Core.Logging.NetCore">
+      <HintPath>..\..\..\..\SharedLibs\Logging\Logi3PL.Business.Core.Logging.NetCore.dll</HintPath>
+    </Reference>
+    <Reference Include="SLF.NetCore">
+      <HintPath>..\..\..\..\SharedLibs\Logging\SLF.NetCore.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
