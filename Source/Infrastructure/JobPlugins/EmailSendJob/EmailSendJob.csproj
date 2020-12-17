@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Handlebars.Net" Version="2.0.3" />
     <PackageReference Include="RestSharp" Version="106.10.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Handlebars">
+      <HintPath>..\..\..\..\SharedLibs\TemplateRender\Handlebars.dll</HintPath>
+    </Reference>
     <Reference Include="Logi3PL.Business.Core.Logging.NetCore">
       <HintPath>..\..\..\..\SharedLibs\Logging\Logi3PL.Business.Core.Logging.NetCore.dll</HintPath>
     </Reference>

@@ -1,4 +1,5 @@
-﻿using SelfHosting.Common.Request;
+﻿using Quartz;
+using SelfHosting.Common.Request;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,6 +11,6 @@ namespace SelfHosting.Common
     {
         Guid Guid { get; }
         string Name { get; }
-        Task ExecuteJobAsync(IServiceProvider serviceProvider,List<AssignJobParameterItem> jobParameterItems);
+        Task ExecuteJobAsync(IJobExecutionContext context,IServiceProvider serviceProvider,List<AssignJobParameterItem> jobParameterItems, List<AssignJobSubscriberItem> jobSubscriberItems);
     }
 }

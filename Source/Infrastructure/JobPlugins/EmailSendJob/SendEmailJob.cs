@@ -1,20 +1,25 @@
-﻿using EmailSendJob.Model;
+﻿using EmailSendJob.Manager;
+using EmailSendJob.Model;
 using HandlebarsDotNet;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Quartz;
 using RestSharp;
 using SelfHosting.API.AppSettings;
 using SelfHosting.Common;
 using SelfHosting.Common.Request;
 using SelfHosting.Repository;
+using SelfHosting.Repository.Domain;
 using Serilog;
 using Slf.NetCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -30,17 +35,67 @@ namespace EmailSendJob
 
         public string Name => "SendEmailJob";
 
-        public async Task ExecuteJobAsync(IServiceProvider serviceProvider,List<AssignJobParameterItem> jobParameterItems)
+        public SendEmailJob()
+        {
+            try
+            {
+                Handlebars.RegisterHelper("formatDateTime", (writer, context, parameters) =>
+                {
+                    // parameters : datetime iso string, format, culture
+                    try
+                    {
+                        var firstPrm = parameters[0].ToString();
+
+                        if (firstPrm.ToLower() == "now")
+                        {
+                            firstPrm = DateTime.Now.ToString();
+                        }
+
+                        string res;
+                        DateTime datetime = DateTime.Parse(firstPrm, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                        string format = "dd/MM/yyyy";
+                        if (parameters.Count() > 1)
+                        {
+                            format = parameters[1].ToString();
+                        }
+                        if (parameters.Count() > 2 && !string.IsNullOrWhiteSpace(parameters[2].ToString()))
+                        {
+                            string provider = parameters[2].ToString();
+                            IFormatProvider formatprovider = null;
+                            if (provider.ToLower() == "invariant")
+                            {
+                                formatprovider = CultureInfo.InvariantCulture;
+                            }
+                            else
+                            {
+                                formatprovider = CultureInfo.CreateSpecificCulture(provider);
+                            }
+                            res = datetime.ToString(format, formatprovider);
+                        }
+                        else
+                        {
+                            res = datetime.ToString(format);
+                        }
+
+                        writer.WriteSafeString(res);
+                    }
+                    catch (Exception e)
+                    {
+                        writer.WriteSafeString("");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                //TODO:?
+            }
+        }
+
+        public async Task ExecuteJobAsync(IJobExecutionContext context,IServiceProvider serviceProvider,List<AssignJobParameterItem> jobParameterItems, List<AssignJobSubscriberItem> jobSubscriberItems)
         {
             var customerJobIdPrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.CustomerJobIdKey).FirstOrDefault();
 
             Int32.TryParse(customerJobIdPrm.ParamValue, out int customerJobId);
-
-            var masterObjIdPrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.MasterObjectIdKey).FirstOrDefault();
-
-            var masterObjTypePrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.MasterObjectTypeKey).FirstOrDefault();
-            
-            var templateContent = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.TemplateKey).FirstOrDefault()?.ParamValue;
 
             ICustomerJobHistoryRepository customerJobHistoryRepository = serviceProvider.GetRequiredService<ICustomerJobHistoryRepository>();
             await customerJobHistoryRepository.AddHistory(new AddHistoryRequest() { 
@@ -49,36 +104,111 @@ namespace EmailSendJob
                 ProcessTime = DateTimeOffset.Now
             });
 
-            var apiUrl = "http://localhost:51500/PMSApi/issue";
-            var endPoint = "getbyid";
-
-            var client = new RestClient(apiUrl);
-
-            var request = new RestRequest(endPoint, Method.GET);
-            request.AddHeader("parameters", "{'id':"+ masterObjIdPrm.ParamValue + "}");
-
-            var tcs = new TaskCompletionSource<IRestResponse>();
-
-            ///Client'ım endpointini tetikliyoruz.
-            client.ExecuteAsync(request, response =>
+            try
             {
-                tcs.SetResult(response);
-            });
+                if (jobSubscriberItems?.Count<1)
+                {
+                    throw new ArgumentException("JobSubscriberItems required !");
+                }
 
-            var restResponse = await tcs.Task;
+                #region Send Email
 
-            var template = Handlebars.Compile(templateContent);
-            var dataContent = tcs.Task.Result.Content;
-            var remoteDataExp = JsonConvert.DeserializeObject<ExpandoObject>(dataContent);
+                var masterObjIdPrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.MasterObjectIdKey).FirstOrDefault();
 
-            var data = new
+                var masterObjTypePrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.MasterObjectTypeKey).FirstOrDefault();
+
+                var templateContent = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.TemplateKey).FirstOrDefault()?.ParamValue;
+
+                var subjectData = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.SubjectKey).FirstOrDefault()?.ParamValue;
+
+
+                //TODO?Master object servislerini getir
+                var apiUrl = "http://localhost:51500/PMSApi/issue";
+                var endPoint = "getbyid";
+
+                var client = new RestClient(apiUrl);
+
+                var request = new RestRequest(endPoint, Method.GET);
+                request.AddHeader("parameters", "{'id':" + masterObjIdPrm.ParamValue + "}");
+
+                var tcs = new TaskCompletionSource<IRestResponse>();
+
+                ///Client'ım endpointini tetikliyoruz.
+                client.ExecuteAsync(request, response =>
+                {
+                    tcs.SetResult(response);
+                });
+
+                var restResponse = await tcs.Task;
+
+                var template = Handlebars.Compile(templateContent);
+                var dataContent = tcs.Task.Result.Content;
+                
+                var dataFromRemote = JObject.Parse(dataContent);
+
+                var resultJson = dataFromRemote.SelectToken("Result").ToString();
+
+                var remoteDataExp = JsonConvert.DeserializeObject<ExpandoObject>(resultJson);
+
+                var data = new
+                {
+                    Model = remoteDataExp
+                };
+
+                var body = template(data);
+
+                #region Subject Compile
+                try
+                {
+                    var subjectTemplate = Handlebars.Compile(subjectData);
+
+                    subjectData = subjectTemplate(new { });
+                }
+                catch (Exception ex)
+                {
+                }
+                #endregion
+
+                var scheduleName = context.Scheduler.SchedulerName;
+                var jobName = context.JobDetail.Key.Name;
+                var jobGroup = context.JobDetail.Key.Group;
+
+                var trgName = context.Trigger.Key.Name;
+                var trgGroup = context.Trigger.Key.Group;
+
+                var sendDataItem = new SendDataItem()
+                {
+                    JobGroup = jobGroup,
+                    JobName = jobName,
+                    ScheduleName = scheduleName,
+                    TriggerGroup = trgGroup,
+                    TriggerName = trgName,
+                    Type = 1, //TODO:Static - Email/Sms
+                    CreatedDate = DateTimeOffset.Now,
+                    Active = 1
+                };
+
+                var subject = subjectData;
+                var bodyContent = body;
+                var recipients = new List<string>();
+
+                foreach (var item in jobSubscriberItems.Where(x=>x.SubscriberType == (byte)JobSubscriberType.Assigned))
+                {
+                    recipients.Add(item.Subscriber);
+                }
+
+                sendDataItem.Cc = jobSubscriberItems.Where(x => x.SubscriberType == (byte)JobSubscriberType.Related).Select(x=>x.Subscriber).Aggregate((x, y) => x + ";" + y);
+
+                SendDataBy(serviceProvider, sendDataItem, subject, bodyContent, recipients);
+
+                Log.Information($"SendEmailJob- Execute Methodu çalıştı dönen sonuç => {tcs.Task.Result.StatusCode}");
+
+                #endregion
+            }
+            catch (Exception ex)
             {
-                //Creator = creator,
-                //Recipient = item,
-                Model = remoteDataExp
-            };
-
-            var body = template(data);
+                //TODO:?
+            }
 
             await customerJobHistoryRepository.AddHistory(new AddHistoryRequest()
             {
@@ -86,17 +216,16 @@ namespace EmailSendJob
                 ProcessStatus = SelfHosting.Common.JobScheduler.ProcessStatusTypes.Executed,
                 ProcessTime = DateTimeOffset.Now
             });
-
-            
-
-            Log.Information($"SendEmailJob- Execute Methodu çalıştı dönen sonuç => {tcs.Task.Result.StatusCode}");
         }
 
-        private void SendDataBy(IServiceProvider serviceProvider,SendDataMailAccount sendDataMailAccount, SendDataItem sendDataItem, string subject, string bodyContent, List<string> recipients, bool useDetailForEveryoneDataValue)
+        private void SendDataBy(IServiceProvider serviceProvider,SendDataItem sendDataItem, string subject, string bodyContent, List<string> recipients)
         {
             var confg = serviceProvider.GetService<IOptions<ConfigParameter>>();
 
             var conStr = confg.Value.SchedulerConStr;
+
+            var sendDataMailAccounts = SendDataMailAccountManager.GetMailAccounts(conStr);
+            var sendDataMailAccount = sendDataMailAccounts.FirstOrDefault();
 
             #region Send Email
             Stopwatch stopwatch = new Stopwatch();
@@ -200,18 +329,10 @@ namespace EmailSendJob
                 var saveDataItem = await InsertSendDataItem(conStr,sendDataItem);
             };
 
-            //herkes icin tek template kullan
-            if (useDetailForEveryoneDataValue)
+            recipients.AsParallel().ForAll(recipient =>
             {
-                sendMailAction(recipients);
-            }
-            else
-            {
-                recipients.AsParallel().ForAll(recipient =>
-                {
-                    sendMailAction(new List<string>() { recipient });
-                });
-            }
+                sendMailAction(new List<string>() { recipient });
+            });
 
             stopwatch.Stop();
 

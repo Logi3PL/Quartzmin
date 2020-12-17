@@ -187,9 +187,12 @@ namespace SelfHosting.Services
 
                     var customerJobParameters = JsonConvert.SerializeObject(customerJob.CustomerJobParameters.Select(x => new AssignJobParameterItem() { ParamKey = x.ParamKey, ParamSource = x.ParamSource, ParamValue = x.ParamValue }).ToList());
 
-                    jobdataMap.Add("SchedulerJobName", customerJob.Job.Name);
-                    jobdataMap.Add("SchedulerJobPathRoot", root);
-                    jobdataMap.Add("SchedulerJobParameters", customerJobParameters);
+                    var customerJobSubs = JsonConvert.SerializeObject(customerJob.CustomerJobSubscribers.Select(x => new AssignJobSubscriberItem() { Subscriber = x.Subscriber,SubscriberType = x.SubscriberType,Description = x.Description }).ToList());
+
+                    jobdataMap.Add(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobNameKey, customerJob.Job.Name);
+                    jobdataMap.Add(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobPathRootKey, root);
+                    jobdataMap.Add(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobParametersKey, customerJobParameters);
+                    jobdataMap.Add(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobSubscribersKey, customerJobSubs);
 
                     IJobDetail jobDetail = JobBuilder.Create<JobExecuter.JobExecuter>().WithIdentity(jobName, jobGroup).Build();
                     /*Uniq oluşturduğumuz keyleri burada kullanıyoruz ve Build ile Joblarımızı çalıştıracak olan JobExecuter sınıfını

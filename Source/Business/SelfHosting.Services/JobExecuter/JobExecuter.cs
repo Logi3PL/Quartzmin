@@ -38,37 +38,53 @@ namespace SelfHosting.Services.JobExecuter
         {
 
             // Create a new scope
-            using (var scope = _provider.CreateScope())
+            try
             {
-                // Resolve the Scoped service
-                _customerJobHistoryRepository = scope.ServiceProvider.GetRequiredService<ICustomerJobHistoryRepository>();
-
-                JobDataMap dataMap = context.MergedJobDataMap;
-
-                //var SchedulerJob = (ISchedulerJob)dataMap.Get("SchedulerJob");
-                var SchedulerJobName = dataMap.GetString("SchedulerJobName");
-                var root = dataMap.GetString("SchedulerJobPathRoot");
-                var jobParameters = new List<AssignJobParameterItem>();
-
-                if (dataMap.ContainsKey("SchedulerJobParameters"))
+                using (var scope = _provider.CreateScope())
                 {
-                    var prmString = dataMap.Get("SchedulerJobParameters").ToString();
+                    // Resolve the Scoped service
+                    _customerJobHistoryRepository = scope.ServiceProvider.GetRequiredService<ICustomerJobHistoryRepository>();
 
-                    jobParameters = JsonConvert.DeserializeObject<List<AssignJobParameterItem>>(prmString);
+                    JobDataMap dataMap = context.MergedJobDataMap;
+
+                    //var SchedulerJob = (ISchedulerJob)dataMap.Get("SchedulerJob");
+                    var SchedulerJobName = dataMap.GetString(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobNameKey);
+                    var root = dataMap.GetString(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobPathRootKey);
+                    var jobParameters = new List<AssignJobParameterItem>();
+
+                    if (dataMap.ContainsKey(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobParametersKey))
+                    {
+                        var prmString = dataMap.Get(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobParametersKey).ToString();
+
+                        jobParameters = JsonConvert.DeserializeObject<List<AssignJobParameterItem>>(prmString);
+                    }
+
+                    var jobSubscribers = new List<AssignJobSubscriberItem>();
+
+                    if (dataMap.ContainsKey(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobSubscribersKey))
+                    {
+                        var prmString = dataMap.Get(ConstantHelper.SchedulerJobHelper.SchedulerJobDataMapHelper.SchedulerJobSubscribersKey).ToString();
+
+                        jobSubscribers = JsonConvert.DeserializeObject<List<AssignJobSubscriberItem>>(prmString);
+                    }
+
+                    string pluginFolder = Path.Combine(root, "JobPlugins");
+
+                    string[] filePaths = Directory.GetFiles(pluginFolder, $"{SchedulerJobName}.dll");
+
+                    var jobAssembly = Assembly.LoadFile(filePaths[0]);
+
+                    var jobType = jobAssembly.GetTypes().Where(x => x.GetInterface(nameof(ISchedulerJob)) != null).FirstOrDefault();
+
+                    var SchedulerJob = (ISchedulerJob)Activator.CreateInstance(jobType);
+
+                    await SchedulerJob.ExecuteJobAsync(context, scope.ServiceProvider, jobParameters, jobSubscribers);
+
                 }
-
-                string pluginFolder = Path.Combine(root, "JobPlugins");
-
-                string[] filePaths = Directory.GetFiles(pluginFolder, $"{SchedulerJobName}.dll");
-
-                var jobAssembly = Assembly.LoadFile(filePaths[0]);
-
-                var jobType = jobAssembly.GetTypes().Where(x => x.GetInterface(nameof(ISchedulerJob)) != null).FirstOrDefault();
-
-                var SchedulerJob = (ISchedulerJob)Activator.CreateInstance(jobType);
-
-                await SchedulerJob.ExecuteJobAsync(scope.ServiceProvider, jobParameters);
-
+            }
+            catch (Exception ex)
+            {
+                //TODO: ?
             }
 
         }
