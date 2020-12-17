@@ -76,7 +76,7 @@ namespace Logi3plJMS.API
             services.Configure<ConfigParameter>(Configuration.GetSection("ConfigParameter"));
 
             //Worker Servimiz ayağa kalktığında Üreteceği SchedulerFactory Context'ine API üzerinden erişebilmek için ctor'u bir kez ayağa kaldırıyoruz.
-            //services.AddSingleton(typeof(SchedulerWorkerService));
+            services.AddSingleton(typeof(SchedulerWorkerService));
             
             //Worker Servisin Tüketeceği Scheduler servisi Singleton yapıyoruz. Api tarafından Monitoring işlemlerinde Quartz Context'ini kullanabilmek için..
             services.AddSingleton<ISchedulerService, SchedulerService>();
