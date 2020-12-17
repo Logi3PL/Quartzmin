@@ -29,8 +29,9 @@ namespace Logi3plJMS.API.Controllers
             return Ok(customerJobs);
         }
 
+        [Route("assignjob")]
         [HttpPost]
-        public async Task<dynamic> AssignJob(AssignJobRequest assignJobRequest)
+        public async Task<dynamic> AssignJob([FromBody]AssignJobRequest assignJobRequest)
         {
             return await _customJobService.AssignJob(assignJobRequest);
         }

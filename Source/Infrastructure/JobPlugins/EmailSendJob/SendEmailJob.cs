@@ -1,7 +1,9 @@
 ﻿using EmailSendJob.Model;
+using HandlebarsDotNet;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using RestSharp;
 using SelfHosting.API.AppSettings;
 using SelfHosting.Common;
@@ -12,6 +14,7 @@ using Slf.NetCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -36,6 +39,8 @@ namespace EmailSendJob
             var masterObjIdPrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.MasterObjectIdKey).FirstOrDefault();
 
             var masterObjTypePrm = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.MasterObjectTypeKey).FirstOrDefault();
+            
+            var templateContent = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.TemplateKey).FirstOrDefault()?.ParamValue;
 
             ICustomerJobHistoryRepository customerJobHistoryRepository = serviceProvider.GetRequiredService<ICustomerJobHistoryRepository>();
             await customerJobHistoryRepository.AddHistory(new AddHistoryRequest() { 
@@ -62,6 +67,19 @@ namespace EmailSendJob
 
             var restResponse = await tcs.Task;
 
+            var template = Handlebars.Compile(templateContent);
+            var dataContent = tcs.Task.Result.Content;
+            var remoteDataExp = JsonConvert.DeserializeObject<ExpandoObject>(dataContent);
+
+            var data = new
+            {
+                //Creator = creator,
+                //Recipient = item,
+                Model = remoteDataExp
+            };
+
+            var body = template(data);
+
             await customerJobHistoryRepository.AddHistory(new AddHistoryRequest()
             {
                 CustomerJobId = 1,
@@ -69,7 +87,9 @@ namespace EmailSendJob
                 ProcessTime = DateTimeOffset.Now
             });
 
-            Log.Information($"SendEmailJob- Execute Methodu çalıştı dönen sonuç => {tcs.Task.Result.StatusCode} -- {tcs.Task.Result.Content}");
+            
+
+            Log.Information($"SendEmailJob- Execute Methodu çalıştı dönen sonuç => {tcs.Task.Result.StatusCode}");
         }
 
         private void SendDataBy(IServiceProvider serviceProvider,SendDataMailAccount sendDataMailAccount, SendDataItem sendDataItem, string subject, string bodyContent, List<string> recipients, bool useDetailForEveryoneDataValue)

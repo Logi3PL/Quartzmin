@@ -72,6 +72,30 @@ namespace SelfHosting.Repository
 
                         _jobContext.CustomerJobParameter.Add(customerJobParam);
                     }
+                }
+
+
+                if (assignJobRequest.JobSubscriberItems?.Count > 0)
+                {
+                    foreach (var jobSubsItem in assignJobRequest.JobSubscriberItems)
+                    {
+                        var customerJobSubsc = new CustomerJobSubscriber()
+                        {
+                            CustomerJobId = customerJob.Id,
+                            Subscriber = jobSubsItem.Subscriber,
+                            SubscriberType = jobSubsItem.SubscriberType,
+                            Description = jobSubsItem.Description,
+                            Active = 1,
+                            CreatedBy = 1, //TODO ?
+                            CreatedTime = DateTime.Now
+                        };
+
+                        _jobContext.CustomerJobSubscribers.Add(customerJobSubsc);
+                    }
+                }
+
+                if (assignJobRequest.JobParameters?.Count>0 || assignJobRequest.JobSubscriberItems?.Count > 0)
+                {
 
                     res = await _jobContext.SaveChangesAsync();
 

@@ -166,7 +166,47 @@ namespace SelfHosting.Repository
                     .HasDefaultValueSql("(getutcdate())");
 
             });
-            
+
+            modelBuilder.Entity<CustomerJobSubscriber>(entity =>
+            {
+                entity.ToTable("JMS_CUSTOMERJOBSUBSCRIBER");
+
+                entity.HasKey(cj => cj.Id);
+
+                entity.HasOne(c => c.CustomerJob)
+                .WithMany(b => b.CustomerJobSubscribers)
+                .HasForeignKey(c => c.CustomerJobId);
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.Property(e => e.CustomerJobId).HasColumnName("CUSTOMERJOBID");
+                entity.Property(e => e.Subscriber).HasColumnName("SUBSCRIBER");
+                entity.Property(e => e.SubscriberType).HasColumnName("SUBSCRIBERTYPE");
+
+                entity.Property(e => e.Active)
+                    .HasColumnName("ACTIVE")
+                    .HasDefaultValueSql("((1))");
+
+
+                entity.Property(e => e.Description)
+                    .HasColumnName("DESCRIPTION")
+                    .HasMaxLength(1000);
+
+                entity.Property(e => e.CreatedBy).HasColumnName("CREATEDBY");
+
+                entity.Property(e => e.CreatedTime)
+                    .HasColumnName("CREATEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("MODIFIEDBY").IsRequired(false);
+
+                entity.Property(e => e.ModifiedTime).IsRequired(false)
+                    .HasColumnName("MODIFIEDTIME")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getutcdate())");
+
+            });
+
             modelBuilder.Entity<CustomerJobHistory>(entity =>
             {
                 entity.ToTable("JMS_CUSTOMERJOBHISTORY");
@@ -199,5 +239,6 @@ namespace SelfHosting.Repository
         public  DbSet<CustomerJob> CustomerJob { get; set; }
         public DbSet<CustomerJobParameter> CustomerJobParameter { get; set; }
         public  DbSet<CustomerJobHistory> CustomerJobHistories { get; set; }
+        public DbSet<CustomerJobSubscriber> CustomerJobSubscribers { get; set; }
     }
 }
