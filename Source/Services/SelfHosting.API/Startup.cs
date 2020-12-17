@@ -35,12 +35,12 @@ namespace Logi3plJMS.API
             Configuration = configuration;
 
             //TODO: Slf'yi baz al
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
-                 .MinimumLevel.Override("System", LogEventLevel.Error)
-                .WriteTo.RollingFile(@"C:\TayfunSelfHostSerilog\log-{Date}.txt", fileSizeLimitBytes: null, retainedFileCountLimit: null) //.txt yazdırmak için RollingFile Sink'ini kuruyoruz.
-                .CreateLogger();
+            //Log.Logger = new LoggerConfiguration()
+            //    .MinimumLevel.Information()
+            //    .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+            //     .MinimumLevel.Override("System", LogEventLevel.Error)
+            //    .WriteTo.RollingFile(@"C:\TayfunSelfHostSerilog\log-{Date}.txt", fileSizeLimitBytes: null, retainedFileCountLimit: null) //.txt yazdırmak için RollingFile Sink'ini kuruyoruz.
+            //    .CreateLogger();
         }
 
         public IConfiguration Configuration { get; }

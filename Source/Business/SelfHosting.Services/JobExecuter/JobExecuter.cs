@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Logi3PL.Business.Core.Logging.BusinessLoggers;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Quartz;
 using RestSharp;
@@ -84,7 +85,9 @@ namespace SelfHosting.Services.JobExecuter
             }
             catch (Exception ex)
             {
-                //TODO: ?
+                BusinessLogger.Log(ConstantHelper.JobLog, "JobExecuter->Execute", exception: ex, extraParams: new Dictionary<string, object>() {
+                    {"JobDataMap",context.MergedJobDataMap }
+                });
             }
 
         }

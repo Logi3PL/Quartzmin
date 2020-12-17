@@ -1,4 +1,6 @@
 ﻿using EmailSendJob.Model;
+using Logi3PL.Business.Core.Logging.BusinessLoggers;
+using Logi3PL.Business.Core.Logging.NetCore.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +12,7 @@ namespace EmailSendJob.Manager
 {
     public class SendDataMailAccountManager
     {
-        public static List<SendDataMailAccount> GetMailAccounts(string sqlConStr)
+        public static List<SendDataMailAccount> GetMailAccounts(string serviceName,string sqlConStr)
         {
             List<SendDataMailAccount> sendDataMailAccountList = new List<SendDataMailAccount>();
 
@@ -87,7 +89,7 @@ WHERE ACTIVE = 1 AND ISDEFAULT = 1
             }
             catch (Exception ex)
             {
-                //TODO:Log                
+                BusinessLogger.Log(serviceName, "GetMailAccounts", exception: ex);
             }
 
             return sendDataMailAccountList;

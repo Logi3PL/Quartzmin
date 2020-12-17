@@ -17,4 +17,13 @@
     <ProjectReference Include="..\..\Quartz.Plugins.RecentHistory\Quartz.Plugins.RecentHistory.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Logi3PL.Business.Core.Logging.NetCore">
+      <HintPath>..\..\..\SharedLibs\Logging\Logi3PL.Business.Core.Logging.NetCore.dll</HintPath>
+    </Reference>
+    <Reference Include="SLF.NetCore">
+      <HintPath>..\..\..\SharedLibs\Logging\SLF.NetCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

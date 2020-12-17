@@ -1,6 +1,7 @@
 ﻿using EmailSendJob.Manager;
 using EmailSendJob.Model;
 using HandlebarsDotNet;
+using Logi3PL.Business.Core.Logging.BusinessLoggers;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -87,7 +88,7 @@ namespace EmailSendJob
             }
             catch (Exception ex)
             {
-                //TODO:?
+
             }
         }
 
@@ -201,13 +202,15 @@ namespace EmailSendJob
 
                 SendDataBy(serviceProvider, sendDataItem, subject, bodyContent, recipients);
 
-                Log.Information($"SendEmailJob- Execute Methodu çalıştı dönen sonuç => {tcs.Task.Result.StatusCode}");
-
                 #endregion
             }
             catch (Exception ex)
             {
-                //TODO:?
+                BusinessLogger.Log(ConstantHelper.JobLog, "ExecuteJobAsync", exception: ex, extraParams: new Dictionary<string, object>() {
+                    {"JobParameterItems",jobParameterItems },
+                    { "JobName",this.Name },
+                    { "JobGuid",this.Guid }
+                });
             }
 
             await customerJobHistoryRepository.AddHistory(new AddHistoryRequest()
@@ -224,7 +227,7 @@ namespace EmailSendJob
 
             var conStr = confg.Value.SchedulerConStr;
 
-            var sendDataMailAccounts = SendDataMailAccountManager.GetMailAccounts(conStr);
+            var sendDataMailAccounts = SendDataMailAccountManager.GetMailAccounts(ConstantHelper.JobLog,conStr);
             var sendDataMailAccount = sendDataMailAccounts.FirstOrDefault();
 
             #region Send Email
@@ -336,18 +339,18 @@ namespace EmailSendJob
 
             stopwatch.Stop();
 
-            LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
-            {
-                LoggerName = ConstantHelper.JobLog,
-                Title = "SendDataBy Executed",
-                Message = "SendDataBy Executed",
-                LogItemProperties = new List<LogItemProperty>() {
-                                new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
-                                new LogItemProperty("ActionName", "SendDataBy"),
-                                new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
-                            },
-                LogLevel = LogLevel.Trace
-            });
+            //LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
+            //{
+            //    LoggerName = ConstantHelper.JobLog,
+            //    Title = "SendDataBy Executed",
+            //    Message = "SendDataBy Executed",
+            //    LogItemProperties = new List<LogItemProperty>() {
+            //                    new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
+            //                    new LogItemProperty("ActionName", "SendDataBy"),
+            //                    new LogItemProperty("ElapsedTimeAssn", stopwatch.Elapsed.TotalSeconds),
+            //                },
+            //    LogLevel = LogLevel.Trace
+            //});
             #endregion
         }
 
@@ -495,18 +498,10 @@ INSERT INTO [dbo].[PLG_SENDDATA_ITEMS]
             }
             catch (Exception ex)
             {
-                LoggerService.GetLogger(ConstantHelper.JobLog).Log(new LogItem()
-                {
-                    LoggerName = ConstantHelper.JobLog,
-                    Title = "InsertSendDataItem Error",
-                    Message = ex.Message,
-                    LogItemProperties = new List<LogItemProperty>() {
-                        new LogItemProperty("ServiceName", ConstantHelper.JobLog) ,
-                        new LogItemProperty("ActionName", "InsertSendDataItem"),
-                        new LogItemProperty("FormData", sendDataDetail),
-                    },
-                    LogLevel = LogLevel.Error,
-                    Exception = ex
+                BusinessLogger.Log(ConstantHelper.JobLog, "InsertSendDataItem", exception: ex, extraParams: new Dictionary<string, object>() {
+                    {"FormData",sendDataDetail },
+                    { "JobName",this.Name },
+                    { "JobGuid",this.Guid }
                 });
                 return -1;
             }

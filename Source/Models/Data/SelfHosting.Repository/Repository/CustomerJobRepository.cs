@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System;
 using SelfHosting.Common;
 using SelfHosting.Common.Request;
+using Logi3PL.Business.Core.Logging.BusinessLoggers;
 
 namespace SelfHosting.Repository
 {
@@ -118,6 +119,12 @@ namespace SelfHosting.Repository
                 catch (Exception)
                 {
                 }
+
+                BusinessLogger.Log(ConstantHelper.JobLog, "AddHistory", exception: ex, extraParams: new Dictionary<string, object>() {
+                    {"AssignJobRequest",assignJobRequest },
+                    {"RepositoryName",this.GetType().Name }
+                });
+
                 return Helper.ReturnError(ex);
             }
         }
