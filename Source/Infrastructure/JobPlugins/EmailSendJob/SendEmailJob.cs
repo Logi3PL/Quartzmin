@@ -2,6 +2,8 @@
 using EmailSendJob.Model;
 using HandlebarsDotNet;
 using Logi3PL.Business.Core.Logging.BusinessLoggers;
+using Logi3PL.Business.DataStore.NetCore.Context;
+using Logi3PL.Business.DataStore.NetCore.Implementations;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -122,6 +124,12 @@ namespace EmailSendJob
 
                 var subjectData = jobParameterItems?.Where(x => x.ParamKey == ConstantHelper.SchedulerJobHelper.SubjectKey).FirstOrDefault()?.ParamValue;
 
+                AppCacheNoSqlRepository appCacheNoSqlRepository = serviceProvider.GetRequiredService<AppCacheNoSqlRepository>();
+                var cacheManager = new ApplicationCacheManager(appCacheNoSqlRepository, ConstantHelper.JobCache.JobCachePrefix);
+
+                cacheManager.AddOrUpdateItem(ConstantHelper.JobCache.GetMasterObjectUrl(masterObjTypePrm.ParamValue), "http://localhost:51500/PMSApi/issue");
+
+                var url = cacheManager.GetValue<string>(ConstantHelper.JobCache.GetMasterObjectUrl(masterObjTypePrm.ParamValue));
 
                 //TODO?Master object servislerini getir
                 var apiUrl = "http://localhost:51500/PMSApi/issue";

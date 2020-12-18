@@ -6,6 +6,18 @@ namespace SelfHosting.Common
 {
     public struct ConstantHelper
     {
+        public struct JobCache
+        {
+            public const string JobCachePrefix = "JMS";
+            public const string JobCacheSufix = "Val";
+            public const string JobCacheMasterObjectPrefix = "MasterObject";
+
+            public static string GetMasterObjectUrl(string masterObjectType)
+            {
+                return $"{ConstantHelper.JobCache.JobCacheMasterObjectPrefix}:{ConstantHelper.JobCache.JobCacheSufix}:{masterObjectType}";
+            }
+        }
+
         public const string JobLog = "JMS";
         public const string ServiceKey = "ServiceName";
         public const string JobNamePrefix = "job-";

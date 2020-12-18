@@ -22,6 +22,10 @@ using SelfHosting.Services.JobExecuter;
 using Quartz.Impl;
 using System.Collections.Specialized;
 using Quartz.Spi;
+using Logi3PL.Business.DataStore.NetCore;
+using StackExchange.Redis;
+using Logi3PL.Business.DataStore.NetCore.Implementations;
+using Microsoft.Extensions.Options;
 
 namespace Logi3plJMS.API
 {
@@ -74,6 +78,7 @@ namespace Logi3plJMS.API
 
             //AppSettings içerinde tanımlamış olduğum parametreleri sınıfıma set ediyorum.
             services.Configure<ConfigParameter>(Configuration.GetSection("ConfigParameter"));
+            services.Configure<AppCacheNoSqlOptions>(Configuration.GetSection("AppCacheNoSqlOptions"));
 
             //Worker Servimiz ayağa kalktığında Üreteceği SchedulerFactory Context'ine API üzerinden erişebilmek için ctor'u bir kez ayağa kaldırıyoruz.
             services.AddSingleton(typeof(SchedulerWorkerService));
@@ -117,6 +122,32 @@ namespace Logi3plJMS.API
                 return factory;
             });
 
+            services.AddSingleton<AppCacheNoSqlConnection>((x) =>
+            {
+                var opt = x.GetRequiredService<IOptions<AppCacheNoSqlOptions>>();
+                var settings = opt.Value;
+
+                var config = new ConfigurationOptions
+                {
+                    EndPoints =
+                    {
+                        { settings.Host, settings.Port}
+                    },
+                    //KeepAlive = 300,
+                    Password = settings.Password,
+                    ConnectTimeout = 5000,
+                    Ssl = !string.IsNullOrEmpty(settings.Password),
+                    AbortOnConnectFail = false,
+                    SyncTimeout = Int32.MaxValue,
+                    ReconnectRetryPolicy = new ExponentialRetry(5000)
+                };
+
+                var connectionMultiplexer = ConnectionMultiplexer.Connect(config);
+                var appCacheNoSql = new AppCacheNoSqlConnection(connectionMultiplexer, settings);
+                return appCacheNoSql;
+            });
+
+            services.AddTransient<AppCacheNoSqlRepository>();
 
             services.AddHostedService<QuartzHostedService>();
 
