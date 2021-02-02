@@ -80,7 +80,7 @@
 
     function loadTableDatas() {
 
-        var url = "BulkCopyApi/LoadTables?conString=" + $("#sourceconnectionstring").val();
+        var url = "BulkCopyApi/LoadTables?conString=" + escape($("#sourceconnectionstring").val());
         $.getJSON(url, function (tableJson) {
             var tables = JSON.parse(tableJson);
 

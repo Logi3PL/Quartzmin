@@ -14,7 +14,7 @@ namespace SelfHosting.Common
 
             public static string GetMasterObjectUrl(string masterObjectType)
             {
-                return $"{ConstantHelper.JobCache.JobCacheMasterObjectPrefix}:{ConstantHelper.JobCache.JobCacheSufix}:{masterObjectType}";
+                return $"{ConstantHelper.JobCache.JobCacheMasterObjectPrefix}:{masterObjectType}:{ConstantHelper.JobCache.JobCacheSufix}";
             }
         }
 

@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 
 namespace Quartz.Plugins.BulkCopyJob.Controller
@@ -16,6 +17,8 @@ namespace Quartz.Plugins.BulkCopyJob.Controller
         public async Task<IHttpActionResult> LoadTables(string conString)
         {
             List<dynamic> list = new List<dynamic>();
+            conString = HttpUtility.UrlDecode(conString);
+
             using (SqlConnection con = new SqlConnection(conString))
             {
                 con.Open();
@@ -30,7 +33,7 @@ namespace Quartz.Plugins.BulkCopyJob.Controller
                     {
                         string tabletype = (string)row[0];
                         string tablename = (string)row[1];
-
+                        
                         using (SqlCommand clmCmd = new SqlCommand($@"SELECT COLUMN_NAME,DATA_TYPE,IS_NULLABLE
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = N'{tablename}'", con))
